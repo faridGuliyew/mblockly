@@ -29,13 +29,6 @@ class BuilderViewModel : BaseViewModel() {
 
     /** ===== MAIN SECTION - Below functions only interact with state. NOT subState. ===== */
 
-    private fun triggerUiUpdate() {
-        // Copy will trigger UI update
-        Log.d("BuilderVM", "Triggering UI update with: ${state.value.mainInstructionGroup}")
-        state.update { it.copy(mainInstructionGroup = it.mainInstructionGroup) }
-    }
-
-
     fun updateInstruction(index: Int, newInstructionBlock: InstructionBlock) {
 
         // MAIN GROUP CANNOT BE MODIFIED
@@ -43,7 +36,6 @@ class BuilderViewModel : BaseViewModel() {
 
         runSafelyInBg {
             newInstructionBlock.getParent().instructionBlocks[index] = newInstructionBlock
-            triggerUiUpdate()
         }
 
     }
@@ -51,7 +43,6 @@ class BuilderViewModel : BaseViewModel() {
     fun removeInstructionBlock(index: Int, block: InstructionBlock) {
         runSafelyInBg {
             block.getParent().instructionBlocks.removeAt(index)
-            triggerUiUpdate()
         }
     }
 
@@ -61,7 +52,6 @@ class BuilderViewModel : BaseViewModel() {
             val grandParentGroup = parentGroup.getParent()
 
             block.changeParent(newParent = grandParentGroup, currentIndex = index, newIndex = 0)
-            triggerUiUpdate()
         }
     }
 
@@ -73,21 +63,18 @@ class BuilderViewModel : BaseViewModel() {
             if (groupToMoveInside == null) failGracefully(message = TARGET_BLOCK_IS_NOT_GROUP, ExceptionType.WARNING)
 
             block.changeParent(newParent = groupToMoveInside, currentIndex = index, newIndex = 0)
-            triggerUiUpdate()
         }
     }
 
     fun moveInstructionUp(index: Int, block: InstructionBlock) {
         runSafelyInBg {
             reorderInstructionInParent(currentIndex = index, block = block, newIndex = index - 1)
-            triggerUiUpdate()
         }
     }
 
     fun moveInstructionDown(index: Int, block: InstructionBlock) {
         runSafelyInBg {
             reorderInstructionInParent(currentIndex = index, block = block, newIndex = index + 1)
-            triggerUiUpdate()
         }
     }
 
@@ -97,7 +84,6 @@ class BuilderViewModel : BaseViewModel() {
         runSafelyInBg {
             val parentId = subState.value.addSingleInstructionParentId ?: return@runSafelyInBg
             addInstructionBlock(newBlock = InstructionBlock.SingleInstruction(instruction = type.init(), parentId = parentId))
-            triggerUiUpdate()
         }
     }
 
@@ -106,7 +92,6 @@ class BuilderViewModel : BaseViewModel() {
             val newGroup = InstructionBlock.InstructionGroup(parentId = parentId)
             addInstructionBlock(newBlock = newGroup)
             instructionGroupsById[newGroup.id] = newGroup
-            triggerUiUpdate()
         }
     }
 

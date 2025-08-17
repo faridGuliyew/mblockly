@@ -71,7 +71,7 @@ fun BuilderScreen() {
         ) {
             InstructionBlockDrawer(
                 block = state.mainInstructionGroup,
-                index = 0,
+                index = -1,
                 onUpdateInstruction = viewModel::updateInstruction,
                 onRemoveInstruction = viewModel::removeInstructionBlock,
                 onMoveUp = viewModel::moveInstructionUp,
@@ -85,36 +85,36 @@ fun BuilderScreen() {
                 onAddSingleInstruction = viewModel::showAddSingleInstructionOptions
             )
 
-//            subState.focusedEditInstructionGroupsWithIndices.forEach { groupWithIndex ->
-//                Column(
-//                    modifier = Modifier.fillMaxSize().background(color = Color.White)
-//                        .verticalScroll(rememberScrollState())) {
-//                    InstructionBlockDrawer(
-//                        block = groupWithIndex.first.copy(isMinimized = false),
-//                        index = groupWithIndex.second,
-//                        onUpdateInstruction = viewModel::updateInstruction,
-//                        onRemoveInstruction = viewModel::removeInstructionBlock,
-//                        onMoveUp = viewModel::moveInstructionUp,
-//                        onMoveDown = viewModel::moveInstructionDown,
-//                        onMoveIn = viewModel::moveInstructionIn,
-//                        onMoveOut = viewModel::moveInstructionOut,
-//                        onAddInstructionGroup = viewModel::addInstructionGroup,
-//                        onEnableSingleInstructionOptionalField = viewModel::showEnableSingleInstructionOptionalField,
-//                        onAddSingleInstruction = viewModel::showAddSingleInstructionOptions,
-//                        onEnableFocusModeForGroup = { index, group ->
-//                            if (group.id == groupWithIndex.first.id) return@InstructionBlockDrawer
-//
-//                            viewModel.enableFocusEditingForGroup(index, group)
-//                        }
-//                    )
-//
-//                    Spacer(modifier = Modifier.heightIn(4.dp))
-//                    AddInstructionButton(
-//                        text = "Close `Focused editing`",
-//                        onClick = viewModel::exitFocusEditingForGroup
-//                    )
-//                }
-//            }
+            subState.focusedEditInstructionGroupsWithIndices.forEach { groupWithIndex ->
+                Column(
+                    modifier = Modifier.fillMaxSize().background(color = Color.White)
+                        .verticalScroll(rememberScrollState())) {
+                    InstructionBlockDrawer(
+                        block = groupWithIndex.first.copy(isMinimized = false),
+                        index = groupWithIndex.second,
+                        onUpdateInstruction = viewModel::updateInstruction,
+                        onRemoveInstruction = viewModel::removeInstructionBlock,
+                        onMoveUp = viewModel::moveInstructionUp,
+                        onMoveDown = viewModel::moveInstructionDown,
+                        onMoveIn = viewModel::moveInstructionIn,
+                        onMoveOut = viewModel::moveInstructionOut,
+                        onAddInstructionGroup = viewModel::addInstructionGroup,
+                        onEnableSingleInstructionOptionalField = viewModel::showEnableSingleInstructionOptionalField,
+                        onAddSingleInstruction = viewModel::showAddSingleInstructionOptions,
+                        onEnableFocusModeForGroup = { index, group ->
+                            if (group.id == groupWithIndex.first.id) return@InstructionBlockDrawer
+
+                            viewModel.enableFocusEditingForGroup(index, group)
+                        }
+                    )
+
+                    Spacer(modifier = Modifier.heightIn(4.dp))
+                    AddInstructionButton(
+                        text = "Close `Focused editing`",
+                        onClick = viewModel::exitFocusEditingForGroup
+                    )
+                }
+            }
         }
     }
 
@@ -204,14 +204,14 @@ fun InstructionBlockDrawer(
                     Row {
                         AddInstructionButton(
                             modifier = Modifier.weight(1F),
-                            text = "Add block",
-                            onClick = { onAddSingleInstruction(block.id) }
+                            text = "Group",
+                            onClick = { onAddInstructionGroup(block.id) }
                         )
                         Spacer(modifier = Modifier.width(12.dp))
                         AddInstructionButton(
                             modifier = Modifier.weight(1F),
-                            text = "Add group",
-                            onClick = { onAddInstructionGroup(block.id) }
+                            text = "Block",
+                            onClick = { onAddSingleInstruction(block.id) }
                         )
                     }
                 }

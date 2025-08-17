@@ -1,5 +1,6 @@
 package farid.guliyev.mblockly.ui.screens.builder_screen
 
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import farid.guliyev.mblockly.domain.model.Instruction
 import farid.guliyev.mblockly.domain.model.optionalFields
 import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderViewModel.Companion.MAIN_GROUP_NAME
@@ -42,7 +43,7 @@ sealed class InstructionBlock {
     }
 
     data class InstructionGroup(
-        val instructionBlocks: MutableList<InstructionBlock> = mutableListOf(),
+        val instructionBlocks: SnapshotStateList<InstructionBlock> = SnapshotStateList(),
         val id : String = UUID.randomUUID().toString(),
         override val parentId: String,
         override val isMinimized: Boolean = false
