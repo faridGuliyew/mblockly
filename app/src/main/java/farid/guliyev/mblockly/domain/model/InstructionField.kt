@@ -1,17 +1,17 @@
 package farid.guliyev.mblockly.domain.model
 
 import farid.guliyev.mblockly.ui.components.FloatValidator
+import farid.guliyev.mblockly.ui.components.StringValidator
 
 interface InstructionField <T, P> {
     val label: String
-    val value: T
+    val value: String
     val validator: (String) -> Boolean
-    val isRequired: Boolean get() = true
     val onEdit : (old: P, value: String) -> P
 
     fun copy(
         label: String = this.label,
-        value: T = this.value,
+        value: String = this.value,
     ) : InstructionField<T, P> {
         return InstructionField(label = label, value = value, validator = validator, onEdit = onEdit)
     }
@@ -21,14 +21,14 @@ interface InstructionField <T, P> {
 
 fun <T, P> InstructionField(
     label: String,
-    value: T,
-    validator: (String) -> Boolean = FloatValidator,
+    value: String,
+    validator: (String) -> Boolean = StringValidator,
     onEdit: (old: P,value: String) -> P,
-    printFormat: (T) -> String = { it.toString() }
+    printer: (String) -> String = { it }
 ) = object : InstructionField<T, P> {
     override val label: String = label
-    override val value: T = value
+    override val value: String = value
     override val validator: (String) -> Boolean = validator
     override val onEdit: (old: P,value: String) -> P = onEdit
-    override fun toString(): String { return printFormat(value) }
+    override fun toString(): String { return printer(value) }
 }

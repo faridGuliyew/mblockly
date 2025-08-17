@@ -8,29 +8,36 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import farid.guliyev.mblockly.domain.model.Instruction
 import farid.guliyev.mblockly.domain.model.type
-import farid.guliyev.mblockly.ui.components.AddInstructionButton
 import farid.guliyev.mblockly.ui.components.EnableInstructionFieldsButton
-import farid.guliyev.mblockly.ui.components.InstructionContainer
+import farid.guliyev.mblockly.ui.components.SingleInstructionContainer
 import farid.guliyev.mblockly.ui.components.InstructionField
 import farid.guliyev.mblockly.domain.model.Instruction.Visuals.DrawShape.OptionalFields.*
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun DrawShapeBlockComponent(
+fun DrawShapeInstructionBlock(
     instruction: Instruction.Visuals.DrawShape,
     index: Int,
+    isMinimized : Boolean,
     onEditInstruction: (Instruction.Visuals.DrawShape) -> Unit,
+    onToggleMinimize: () -> Unit,
     onRemoveInstruction: () -> Unit,
     onAddInstructionField: () -> Unit,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
+    onMoveOut: () -> Unit,
+    onMoveIn: () -> Unit,
 ) {
-    InstructionContainer (
+    SingleInstructionContainer (
         index = index,
         type = instruction.type,
         onRemove = onRemoveInstruction,
         onMoveDown = onMoveDown,
-        onMoveUp = onMoveUp
+        onMoveUp = onMoveUp,
+        onMoveOut = onMoveOut,
+        onMoveIn = onMoveIn,
+        isMinimized = isMinimized,
+        onToggleMinimize = onToggleMinimize
     ) {
         // Inputs row
         FlowRow(
@@ -82,6 +89,13 @@ fun DrawShapeBlockComponent(
                     onValueChanged = onEditInstruction
                 )
             }
+            if (instruction.enabledOptionalFields.contains(SCALE_FIELD)) {
+                InstructionField(
+                    instruction = instruction,
+                    instructionField = instruction.scaleField,
+                    onValueChanged = onEditInstruction
+                )
+            }
 
             /** === Optional fields add button === */
             if (instruction.enabledOptionalFields.size < Instruction.Visuals.DrawShape.OptionalFields.entries.size) {
@@ -94,11 +108,14 @@ fun DrawShapeBlockComponent(
 @Preview(showBackground = true)
 @Composable
 private fun DrawShapeBlockComponentPrev() {
-    DrawShapeBlockComponent(
+    DrawShapeInstructionBlock(
         instruction = Instruction.Visuals.DrawShape(),
         index = 0,
         onEditInstruction = {},
         onRemoveInstruction = {},
-        onMoveDown = {}, onMoveUp = {}, onAddInstructionField = {}
+        onMoveDown = {}, onMoveUp = {}, onAddInstructionField = {}, onToggleMinimize = {},
+        isMinimized = false,
+        onMoveOut = {},
+        onMoveIn = {}
     )
 }

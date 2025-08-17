@@ -24,9 +24,11 @@ import farid.guliyev.mblockly.domain.model.Instruction
 import farid.guliyev.mblockly.domain.model.InstructionField
 
 val FloatValidator: (String) -> Boolean = { it.toFloatOrNull() != null }
+val FloatConverter: (String) -> Float = { it.toFloatOrNull() ?: 0.0F }
 val ColorValidator: (String) -> Boolean = { it.toLongOrNull(16) != null }
 val IntValidator: (String) -> Boolean = { it.toIntOrNull() != null }
 val StringValidator: (String) -> Boolean = { it.isNotBlank() }
+val StringConverter: (String) -> String = { it }
 
 @Composable
 fun <T, P> InstructionField(
@@ -65,7 +67,7 @@ fun <T, P> InstructionField(
             onValueChange = { newInput ->
                 input = newInput
                 isInputValid = instructionField.validator(newInput)
-                println("isInputValid for $newInput: $isInputValid. ${instructionField.validator == StringValidator}")
+
                 if (!isInputValid) return@CustomTextField
                 onValueChanged(instructionField.onEdit(instruction, newInput))
             },

@@ -1,103 +1,308 @@
 package farid.guliyev.mblockly.ui.screens.builder_screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import farid.guliyev.mblockly.domain.model.Instruction
 import farid.guliyev.mblockly.domain.model.optionalFields
 import farid.guliyev.mblockly.ui.components.AddInstructionButton
-import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawShapeBlockComponent
+import farid.guliyev.mblockly.ui.components.InstructionContainer
+import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.AnimateFloatInstructionBlock
+import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DefineFloatInstructionBlock
+import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawShapeInstructionBlock
+import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.WaitInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.BuilderTopBar
-import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
 import farid.guliyev.mblockly.ui.screens.output_screen.OutputScreen
 
 @Composable
 fun BuilderScreen() {
     var isRunning by remember { mutableStateOf(false) }
-    var topBarMode by remember { mutableStateOf(TopBarMode.HIDDEN) }
     val viewModel = remember { BuilderViewModel() }
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val subState by viewModel.subState.collectAsStateWithLifecycle()
 
-    var selectedInstructionWithIndex by remember { mutableStateOf<Pair<Instruction, Int>?>(null) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            val selectedInstruction = selectedInstructionWithIndex?.first
-            val selectedInstructionIndex = selectedInstructionWithIndex?.second
             BuilderTopBar(
-                mode = topBarMode,
-                onToggleExpand = {
-                    topBarMode = if (topBarMode == TopBarMode.HIDDEN) TopBarMode.INSTRUCTION else TopBarMode.HIDDEN
-                },
-                onAddInstruction = { viewModel.addInstruction(it) },
-                enableFieldList = selectedInstruction?.optionalFields.orEmpty(),
-                onEnableField = {
-                    if (selectedInstruction == null) return@BuilderTopBar
-
-                    viewModel.editInstruction(newInstruction = selectedInstruction.enableOptionalFieldByName(it), index = selectedInstructionIndex!!)
-                    selectedInstructionWithIndex = null
-                },
+                mode = subState.topBarMode,
+                onHide = viewModel::hideTopBarMenu,
+                onAddInstruction = viewModel::addSingleInstruction,
+                enableFieldList = subState.enableOptionalFieldList,
+                onEnableField = viewModel::enableInstructionOptionalField,
                 onExecute = { isRunning = true }
             )
         }
     ) { innerPadding ->
-        LazyColumn (
-            modifier = Modifier.padding(innerPadding),
-            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        Box(
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(8.dp)
         ) {
-            itemsIndexed(items = state.draggableUiBlocks) { index, block ->
-                // Your block
-                when (val instruction = block.instruction) {
-                    is Instruction.Visuals.DrawShape -> {
-                        DrawShapeBlockComponent(
-                            index = index,
-                            instruction = instruction,
-                            onEditInstruction = { viewModel.editInstruction(it, index) },
-                            onRemoveInstruction = { viewModel.removeInstruction(index) },
-                            onMoveUp = { viewModel.moveInstructionUp(index) },
-                            onMoveDown = { viewModel.moveInstructionDown(index) },
-                            onAddInstructionField = {
-                                topBarMode = TopBarMode.ENABLE_FIELD
-                                selectedInstructionWithIndex = instruction to index
-                            }
-                        )
-                    }
+            InstructionBlockDrawer(
+                block = state.mainInstructionGroup,
+                index = 0,
+                onUpdateInstruction = viewModel::updateInstruction,
+                onRemoveInstruction = viewModel::removeInstructionBlock,
+                onMoveUp = viewModel::moveInstructionUp,
+                onMoveDown = viewModel::moveInstructionDown,
+                onMoveIn = viewModel::moveInstructionIn,
+                onMoveOut = viewModel::moveInstructionOut,
+                onAddInstructionGroup = viewModel::addInstructionGroup,
 
-                    is Instruction.Variables.DefineDouble -> TODO()
-                    is Instruction.Variables.DefineInteger -> TODO()
-                    is Instruction.Variables.DefineWord -> TODO()
-                }
-            }
+                onEnableFocusModeForGroup = viewModel::enableFocusEditingForGroup,
+                onEnableSingleInstructionOptionalField = viewModel::showEnableSingleInstructionOptionalField,
+                onAddSingleInstruction = viewModel::showAddSingleInstructionOptions
+            )
 
-            // Add button at the end
-            item {
-                AddInstructionButton(
-                    onClick = { topBarMode = TopBarMode.INSTRUCTION }
-                )
-            }
+//            subState.focusedEditInstructionGroupsWithIndices.forEach { groupWithIndex ->
+//                Column(
+//                    modifier = Modifier.fillMaxSize().background(color = Color.White)
+//                        .verticalScroll(rememberScrollState())) {
+//                    InstructionBlockDrawer(
+//                        block = groupWithIndex.first.copy(isMinimized = false),
+//                        index = groupWithIndex.second,
+//                        onUpdateInstruction = viewModel::updateInstruction,
+//                        onRemoveInstruction = viewModel::removeInstructionBlock,
+//                        onMoveUp = viewModel::moveInstructionUp,
+//                        onMoveDown = viewModel::moveInstructionDown,
+//                        onMoveIn = viewModel::moveInstructionIn,
+//                        onMoveOut = viewModel::moveInstructionOut,
+//                        onAddInstructionGroup = viewModel::addInstructionGroup,
+//                        onEnableSingleInstructionOptionalField = viewModel::showEnableSingleInstructionOptionalField,
+//                        onAddSingleInstruction = viewModel::showAddSingleInstructionOptions,
+//                        onEnableFocusModeForGroup = { index, group ->
+//                            if (group.id == groupWithIndex.first.id) return@InstructionBlockDrawer
+//
+//                            viewModel.enableFocusEditingForGroup(index, group)
+//                        }
+//                    )
+//
+//                    Spacer(modifier = Modifier.heightIn(4.dp))
+//                    AddInstructionButton(
+//                        text = "Close `Focused editing`",
+//                        onClick = viewModel::exitFocusEditingForGroup
+//                    )
+//                }
+//            }
         }
     }
 
+
     if (isRunning) {
-        val instructions = remember { state.draggableUiBlocks.map { it.instruction } }
-        OutputScreen(instructions = instructions, onFinish = {
+        val instructions = remember { state.mainInstructionGroup }
+        OutputScreen(mainInstructionGroup = instructions, onFinish = {
             isRunning = false
         })
+    }
+}
+
+@Composable
+fun InstructionBlockDrawer(
+    modifier: Modifier = Modifier,
+    screenHeight: Dp = LocalConfiguration.current.screenHeightDp.dp,
+    block: InstructionBlock,
+    index: Int,
+    onUpdateInstruction: (index: Int, InstructionBlock) -> Unit,
+    onRemoveInstruction: (index: Int, InstructionBlock) -> Unit,
+    onMoveUp: (index: Int, InstructionBlock) -> Unit,
+    onMoveDown: (index: Int, InstructionBlock) -> Unit,
+    onMoveIn: (index: Int, InstructionBlock) -> Unit,
+    onMoveOut: (index: Int, InstructionBlock) -> Unit,
+    onEnableSingleInstructionOptionalField: (index: Int, InstructionBlock.SingleInstruction) -> Unit,
+    onEnableFocusModeForGroup: (index: Int, group: InstructionBlock.InstructionGroup) -> Unit,
+    onAddInstructionGroup: (parentGroupId: String) -> Unit,
+    onAddSingleInstruction: (parentGroupId: String) -> Unit,
+) {
+    when (block) {
+        is InstructionBlock.SingleInstruction -> {
+            SingleInstructionDrawer(
+                instruction = block.instruction,
+                index = index,
+                isMinimized = block.isMinimized,
+                onEditInstruction = { onUpdateInstruction(index, block.copy(instruction = it)) },
+                onToggleMinimize = { onUpdateInstruction(index, block.copy(isMinimized = !block.isMinimized)) },
+                onRemoveInstruction = { onRemoveInstruction(index, block) },
+                onMoveUp = { onMoveUp(index, block) },
+                onMoveDown = { onMoveDown(index, block) },
+                onMoveOut = { onMoveOut(index, block) },
+                onMoveIn =  { onMoveIn(index, block) },
+                onAddInstructionField = { onEnableSingleInstructionOptionalField(index, block) }
+            )
+        }
+
+        is InstructionBlock.InstructionGroup -> {
+            InstructionContainer(
+                modifier = modifier,
+                label = "Thread: ${block.id.take(10)}",
+                index = index,
+                isMinimized = block.isMinimized,
+                onRemove = { onRemoveInstruction(index, block) },
+                onMoveUp = { onMoveUp(index, block) },
+                onMoveDown = { onMoveDown(index, block) },
+                onMoveOut = { onMoveOut(index, block) },
+                onMoveIn =  { onMoveIn(index, block) },
+                onToggleMinimize = { onUpdateInstruction(index, block.copy(isMinimized = !block.isMinimized)) },
+                onEditSeparately = { onEnableFocusModeForGroup(index, block) },
+                backgroundColor = Color(0xFF4CAF50),
+                borderColor = Color(0xFFDEDEDE),
+                innerPadding = PaddingValues(4.dp),
+                content = {
+                    LazyColumn (
+                        modifier = Modifier.heightIn(max = screenHeight * 0.8F),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        itemsIndexed(items = block.instructionBlocks) { childIndex, childBlock ->
+                            // Recursively render each child
+                            InstructionBlockDrawer(
+                                block = childBlock,
+                                index = childIndex,
+                                onUpdateInstruction = onUpdateInstruction,
+                                onRemoveInstruction = onRemoveInstruction,
+                                onMoveUp = onMoveUp,
+                                onMoveDown = onMoveDown,
+                                onMoveIn = onMoveIn,
+                                onMoveOut = onMoveOut,
+                                onEnableSingleInstructionOptionalField = onEnableSingleInstructionOptionalField,
+                                onAddInstructionGroup = onAddInstructionGroup,
+                                onAddSingleInstruction = onAddSingleInstruction,
+                                onEnableFocusModeForGroup = onEnableFocusModeForGroup
+                            )
+                        }
+                    }
+
+                    Row {
+                        AddInstructionButton(
+                            modifier = Modifier.weight(1F),
+                            text = "Add block",
+                            onClick = { onAddSingleInstruction(block.id) }
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        AddInstructionButton(
+                            modifier = Modifier.weight(1F),
+                            text = "Add group",
+                            onClick = { onAddInstructionGroup(block.id) }
+                        )
+                    }
+                }
+            )
+        }
+    }
+}
+
+
+@Composable
+fun SingleInstructionDrawer(
+    instruction: Instruction,
+    index: Int,
+    isMinimized : Boolean,
+    onEditInstruction: (Instruction) -> Unit,
+    onRemoveInstruction: () -> Unit,
+    onAddInstructionField: () -> Unit,
+    onToggleMinimize: () -> Unit,
+    onMoveUp: () -> Unit,
+    onMoveDown: () -> Unit,
+    onMoveOut: () -> Unit,
+    onMoveIn: () -> Unit,
+) {
+    // Your block
+    when (instruction) {
+        is Instruction.Visuals.DrawShape -> {
+            DrawShapeInstructionBlock(
+                index = index,
+                instruction = instruction,
+                isMinimized = isMinimized,
+                onEditInstruction = onEditInstruction,
+                onToggleMinimize = onToggleMinimize,
+                onRemoveInstruction = onRemoveInstruction,
+                onMoveUp = onMoveUp,
+                onMoveDown = onMoveDown,
+                onMoveOut = onMoveOut,
+                onMoveIn = onMoveIn,
+                onAddInstructionField = onAddInstructionField
+            )
+        }
+
+        is Instruction.Variables.DefineFloat -> {
+            DefineFloatInstructionBlock(
+                index = index,
+                instruction = instruction,
+                isMinimized = isMinimized,
+                onEditInstruction = onEditInstruction,
+                onToggleMinimize = onToggleMinimize,
+                onRemoveInstruction = onRemoveInstruction,
+                onMoveUp = onMoveUp,
+                onMoveDown = onMoveDown,
+                onMoveOut = onMoveOut,
+                onMoveIn = onMoveIn,
+                onAddInstructionField = onAddInstructionField
+            )
+        }
+
+        is Instruction.Animations.AnimateFloat -> {
+            AnimateFloatInstructionBlock(
+                index = index,
+                instruction = instruction,
+                isMinimized = isMinimized,
+                onEditInstruction = onEditInstruction,
+                onToggleMinimize = onToggleMinimize,
+                onRemoveInstruction = onRemoveInstruction,
+                onMoveUp = onMoveUp,
+                onMoveDown = onMoveDown,
+                onMoveOut = onMoveOut,
+                onMoveIn = onMoveIn,
+                onAddInstructionField = onAddInstructionField
+            )
+        }
+
+        is Instruction.Controls.Wait -> {
+            WaitInstructionBlock(
+                index = index,
+                instruction = instruction,
+                isMinimized = isMinimized,
+                onEditInstruction = onEditInstruction,
+                onToggleMinimize = onToggleMinimize,
+                onRemoveInstruction = onRemoveInstruction,
+                onMoveUp = onMoveUp,
+                onMoveDown = onMoveDown,
+                onMoveOut = onMoveOut,
+                onMoveIn = onMoveIn,
+                onAddInstructionField = onAddInstructionField
+            )
+        }
+
+        is Instruction.Variables.DefineInteger -> TODO()
+        is Instruction.Variables.DefineString -> TODO()
     }
 }
 

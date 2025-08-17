@@ -23,11 +23,12 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun AddInstructionButton(
+    modifier: Modifier = Modifier,
     text: String = "Add block",
     onClick: () -> Unit
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(top = 8.dp),
         contentAlignment = Alignment.Center
