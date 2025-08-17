@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -16,25 +17,19 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import farid.guliyev.mblockly.domain.model.Instruction
-import farid.guliyev.mblockly.domain.model.optionalFields
-import farid.guliyev.mblockly.ui.components.AddInstructionButton
+import farid.guliyev.mblockly.ui.components.button.AddInstructionButton
 import farid.guliyev.mblockly.ui.components.InstructionContainer
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.AnimateFloatInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DefineFloatInstructionBlock
@@ -42,6 +37,8 @@ import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawShapeInstruct
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.WaitInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.BuilderTopBar
 import farid.guliyev.mblockly.ui.screens.output_screen.OutputScreen
+import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
+import farid.guliyev.mblockly.ui.theme.AccentEmerald
 
 @Composable
 fun BuilderScreen() {
@@ -67,7 +64,7 @@ fun BuilderScreen() {
         Box(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(8.dp)
+                .padding(12.dp)
         ) {
             InstructionBlockDrawer(
                 block = state.mainInstructionGroup,
@@ -87,7 +84,7 @@ fun BuilderScreen() {
 
             subState.focusedEditInstructionGroupsWithIndices.forEach { groupWithIndex ->
                 Column(
-                    modifier = Modifier.fillMaxSize().background(color = Color.White)
+                    modifier = Modifier.fillMaxSize().background(color = BackgroundPrimary)
                         .verticalScroll(rememberScrollState())) {
                     InstructionBlockDrawer(
                         block = groupWithIndex.first.copy(isMinimized = false),
@@ -108,9 +105,10 @@ fun BuilderScreen() {
                         }
                     )
 
-                    Spacer(modifier = Modifier.heightIn(4.dp))
+                    Spacer(modifier = Modifier.heightIn(8.dp))
                     AddInstructionButton(
                         text = "Close `Focused editing`",
+                        backgroundColor = AccentEmerald,
                         onClick = viewModel::exitFocusEditingForGroup
                     )
                 }
@@ -174,13 +172,13 @@ fun InstructionBlockDrawer(
                 onMoveIn =  { onMoveIn(index, block) },
                 onToggleMinimize = { onUpdateInstruction(index, block.copy(isMinimized = !block.isMinimized)) },
                 onEditSeparately = { onEnableFocusModeForGroup(index, block) },
-                backgroundColor = Color(0xFF4CAF50),
-                borderColor = Color(0xFFDEDEDE),
-                innerPadding = PaddingValues(4.dp),
+                backgroundColor = AccentEmerald.copy(alpha = 0.1f),
+                borderColor = AccentEmerald,
+                innerPadding = PaddingValues(8.dp),
                 content = {
                     LazyColumn (
                         modifier = Modifier.heightIn(max = screenHeight * 0.8F),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         itemsIndexed(items = block.instructionBlocks) { childIndex, childBlock ->
                             // Recursively render each child
@@ -199,20 +197,22 @@ fun InstructionBlockDrawer(
                                 onEnableFocusModeForGroup = onEnableFocusModeForGroup
                             )
                         }
-                    }
 
-                    Row {
-                        AddInstructionButton(
-                            modifier = Modifier.weight(1F),
-                            text = "Group",
-                            onClick = { onAddInstructionGroup(block.id) }
-                        )
-                        Spacer(modifier = Modifier.width(12.dp))
-                        AddInstructionButton(
-                            modifier = Modifier.weight(1F),
-                            text = "Block",
-                            onClick = { onAddSingleInstruction(block.id) }
-                        )
+                        item {
+                            Row {
+                                AddInstructionButton(
+                                    modifier = Modifier.weight(1F),
+                                    text = "Group",
+                                    onClick = { onAddInstructionGroup(block.id) }
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                AddInstructionButton(
+                                    modifier = Modifier.weight(1F),
+                                    text = "Block",
+                                    onClick = { onAddSingleInstruction(block.id) }
+                                )
+                            }
+                        }
                     }
                 }
             )

@@ -4,23 +4,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import farid.guliyev.mblockly.domain.model.AlertType
 import farid.guliyev.mblockly.domain.model.ExceptionType
+import farid.guliyev.mblockly.ui.theme.ErrorRed
+import farid.guliyev.mblockly.ui.theme.SuccessGreen
+import farid.guliyev.mblockly.ui.theme.WarningAmber
+import farid.guliyev.mblockly.ui.theme.InfoBlue
 
 val AlertType.containerColor
     @Composable
     get() = when(this) {
-        AlertType.ERROR -> Color(0xFFFFCDD2)
-        AlertType.SUCCESS -> Color(0xFFC8E6C9)
-        AlertType.WARNING -> Color(0xFFFFF9C4)
-        AlertType.INFO -> Color(0xFFBBDEFB)
+        AlertType.ERROR -> ErrorRed.copy(alpha = 0.15f)
+        AlertType.SUCCESS -> SuccessGreen.copy(alpha = 0.15f)
+        AlertType.WARNING -> WarningAmber.copy(alpha = 0.15f)
+        AlertType.INFO -> InfoBlue.copy(alpha = 0.15f)
     }
 
 val AlertType.contentColor
     @Composable
     get() = when(this) {
-        AlertType.ERROR -> Color(0xFFD32F2F)
-        AlertType.SUCCESS -> Color(0xFF388E3C)
-        AlertType.WARNING -> Color(0xFFFBC02D)
-        AlertType.INFO -> Color(0xFF1976D2)
+        AlertType.ERROR -> ErrorRed
+        AlertType.SUCCESS -> SuccessGreen
+        AlertType.WARNING -> WarningAmber
+        AlertType.INFO -> InfoBlue
     }
 
 val AlertType.label

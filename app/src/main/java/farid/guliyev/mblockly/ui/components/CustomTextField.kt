@@ -16,13 +16,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
+import farid.guliyev.mblockly.ui.theme.ErrorRed
+import farid.guliyev.mblockly.ui.theme.InfoBlue
+import farid.guliyev.mblockly.ui.theme.NeutralGray100
+import farid.guliyev.mblockly.ui.theme.NeutralGray200
+import farid.guliyev.mblockly.ui.theme.NeutralGray900
+import farid.guliyev.mblockly.ui.theme.PrimaryBlue
+import farid.guliyev.mblockly.ui.theme.PrimaryBlueLight
 
 @Composable
 fun CustomTextField(
@@ -34,40 +44,48 @@ fun CustomTextField(
 
     val borderColor by animateColorAsState(
         targetValue = when {
-            isError -> Color(0xFFD32F2F) // red when error
-            isFocused -> Color(0xFF1976D2) // stronger blue on focus
-            else -> Color(0xFF90CAF9) // soft blue default
+            isError -> ErrorRed
+            isFocused -> PrimaryBlue
+            else -> NeutralGray200
         },
         label = ""
     )
 
     val backgroundColor by animateColorAsState(
         targetValue = when {
-            isError -> Color(0xFFFFEBEE) // light red on error
-            isFocused -> Color(0xFFE3F2FD) // light blue on focus
-            else -> Color.White
+            isError -> ErrorRed.copy(alpha = 0.05f)
+            isFocused -> PrimaryBlueLight.copy(alpha = 0.05f)
+            else -> BackgroundPrimary
         },
         label = ""
     )
 
     BasicTextField(
+        modifier = Modifier
+            .onFocusChanged { isFocused = it.isFocused }
+            .clip(RoundedCornerShape(12.dp))
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        backgroundColor,
+                        backgroundColor.copy(alpha = 0.8f)
+                    )
+                )
+            )
+            .border(
+                width = if (isFocused) 2.dp else 1.dp,
+                color = borderColor,
+                shape = RoundedCornerShape(12.dp)
+            )
+            .padding(horizontal = 12.dp, vertical = 8.dp)
+            .width(IntrinsicSize.Min),
         value = value,
         onValueChange = onValueChange,
         textStyle = LocalTextStyle.current.copy(
             fontSize = 14.sp,
-            color = Color.Black
+            color = NeutralGray900
         ),
-        cursorBrush = SolidColor(Color(0xFF1976D2)),
-        modifier = Modifier
-            .onFocusChanged { isFocused = it.isFocused }
-            .background(backgroundColor, shape = RoundedCornerShape(8.dp))
-            .border(
-                width = 2.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .padding(horizontal = 6.dp, vertical = 4.dp)
-            .width(IntrinsicSize.Min)
+        cursorBrush = SolidColor(PrimaryBlue)
     )
 }
 

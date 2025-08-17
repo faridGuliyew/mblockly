@@ -30,6 +30,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +42,7 @@ import farid.guliyev.mblockly.domain.model.Alert
 import farid.guliyev.mblockly.domain.model.AlertType
 import farid.guliyev.mblockly.ui.extensions.containerColor
 import farid.guliyev.mblockly.ui.extensions.contentColor
+import farid.guliyev.mblockly.ui.theme.NeutralGray800
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
 
@@ -47,7 +51,7 @@ fun TopAlert(
     alert: Alert?,
     onDismiss: () -> Unit
 ) {
-    val shape = RoundedCornerShape(bottomStart = 12.dp, bottomEnd = 12.dp)
+    val shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
     val animationDuration = 1000
 
     var isAlertVisible by remember(alert) { mutableStateOf(alert != null) }
@@ -72,16 +76,14 @@ fun TopAlert(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(
-                    width = 1.dp,
-                    shape = shape,
-                    color = Color.Black
-                )
+                .clip(shape)
+                .background(color = Color.White)
                 .background(
                     color = current.type.containerColor,
                     shape = shape
                 )
-                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .border(width = 1.dp, color = NeutralGray800, shape = shape)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
                 .statusBarsPadding()
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -91,19 +93,27 @@ fun TopAlert(
                         text = current.title,
                         color = current.type.contentColor,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        fontSize = 18.sp
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = current.description,
-                        color = current.type.contentColor,
-                        fontSize = 14.sp
+                        color = current.type.contentColor.copy(alpha = 0.9f),
+                        fontSize = 15.sp
                     )
                 }
 
                 // Dismiss button
-                IconButton(onClick = { isAlertVisible = false }) {
+                IconButton(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            current.type.contentColor.copy(alpha = 0.1f)
+                        ),
+                    onClick = { isAlertVisible = false }
+                ) {
                     Icon(
+                        modifier = Modifier.padding(4.dp),
                         imageVector = Icons.Default.Close,
                         contentDescription = "Dismiss",
                         tint = current.type.contentColor

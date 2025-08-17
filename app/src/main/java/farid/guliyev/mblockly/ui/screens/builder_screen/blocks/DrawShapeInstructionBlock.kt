@@ -8,7 +8,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import farid.guliyev.mblockly.domain.model.Instruction
 import farid.guliyev.mblockly.domain.model.type
-import farid.guliyev.mblockly.ui.components.EnableInstructionFieldsButton
+import farid.guliyev.mblockly.ui.components.button.EnableInstructionFieldsButton
 import farid.guliyev.mblockly.ui.components.SingleInstructionContainer
 import farid.guliyev.mblockly.ui.components.InstructionField
 import farid.guliyev.mblockly.domain.model.Instruction.Visuals.DrawShape.OptionalFields.*

@@ -1,4 +1,4 @@
-package farid.guliyev.mblockly.ui.components
+package farid.guliyev.mblockly.ui.components.button
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Spacer
@@ -16,33 +16,50 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import farid.guliyev.mblockly.ui.theme.PrimaryBlue
+import farid.guliyev.mblockly.ui.theme.NeutralGray50
 
 @Composable
 fun EnableInstructionFieldsButton(
     onClick: () -> Unit
 ) {
     OutlinedButton(
-        onClick = onClick,
-        shape = RoundedCornerShape(16.dp),
-        border = BorderStroke(1.dp, Color(0xFF1976D2)),
         modifier = Modifier
-            .padding(8.dp)
+            .padding(12.dp)
             .fillMaxWidth()
-            .height(48.dp),
+            .height(56.dp)
+            .clip(RoundedCornerShape(20.dp)),
+        onClick = onClick,
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(
+            1.dp, 
+            Brush.horizontalGradient(
+                colors = listOf(
+                    PrimaryBlue.copy(alpha = 0.6f),
+                    PrimaryBlue.copy(alpha = 0.3f)
+                )
+            )
+        ),
         colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = Color(0xFFE3F2FD), // soft blue background
-            contentColor = Color(0xFF1976D2)
+            containerColor = NeutralGray50,
+            contentColor = PrimaryBlue
         )
     ) {
         Icon(
             imageVector = Icons.Default.Add,
             contentDescription = "Add fields",
-            modifier = Modifier.size(20.dp)
+            modifier = Modifier.size(22.dp)
         )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text("Add fields", fontWeight = FontWeight.Medium)
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(
+            text = "Add fields", 
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp
+        )
     }
 }

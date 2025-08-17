@@ -22,10 +22,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import farid.guliyev.mblockly.domain.model.InstructionType
-import farid.guliyev.mblockly.ui.components.EnableInstructionFieldButton
+import farid.guliyev.mblockly.ui.components.button.EnableInstructionFieldButton
+import farid.guliyev.mblockly.ui.theme.BackgroundSecondary
+import farid.guliyev.mblockly.ui.theme.NeutralGray100
+import farid.guliyev.mblockly.ui.theme.NeutralGray200
+import farid.guliyev.mblockly.ui.theme.NeutralGray700
+import farid.guliyev.mblockly.ui.theme.SuccessGreen
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
+import farid.guliyev.mblockly.ui.components.button.AppIconButtonBackgrounded
 
 enum class TopBarMode {
     ADD_INSTRUCTION, ENABLE_FIELD, HIDDEN
@@ -45,41 +56,42 @@ fun BuilderTopBar(
     Column (
         modifier = Modifier
             .statusBarsPadding()
+            .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+            .background(color = BackgroundSecondary)
     ) {
         Row(
-            modifier = Modifier.padding(start = 16.dp),
+            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 modifier = Modifier.weight(1F),
-                text = "Builder panel"
+                text = "Builder panel",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = NeutralGray700
             )
 
-            Row {
+            Row (horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (mode != TopBarMode.HIDDEN) {
-                    IconButton(
-                        onClick = onHide
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowUp,
-                            contentDescription = "hide"
-                        )
-                    }
-                }
-
-
-                IconButton(
-                    onClick = onExecute
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "run"
+                    AppIconButtonBackgrounded(
+                        icon = Icons.Default.KeyboardArrowUp,
+                        color = NeutralGray700,
+                        onExecute = onHide
                     )
                 }
+
+                AppIconButtonBackgrounded(
+                    icon = Icons.Default.PlayArrow,
+                    color = SuccessGreen,
+                    onExecute = onExecute
+                )
             }
         }
 
-        HorizontalDivider(thickness = 3.dp)
+        HorizontalDivider(
+            thickness = 2.dp,
+            color = NeutralGray200.copy(alpha = 0.5f)
+        )
 
         AnimatedContent(mode) {
             when (it) {
@@ -93,7 +105,10 @@ fun BuilderTopBar(
                     )
                 }
                 TopBarMode.ENABLE_FIELD -> {
-                    FlowRow (horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    FlowRow (
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.padding(16.dp)
+                    ) {
                         enableFieldList.forEach {
                             EnableInstructionFieldButton(
                                 label = it,
@@ -116,19 +131,31 @@ fun AddBlockPanel(blocks: List<InstructionType>, onClick: (InstructionType) -> U
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
+            .padding(16.dp)
     ) {
         blocks.forEach { type ->
             Row (
                 modifier = Modifier
                     .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
                     .clickable(onClick = {
                         onClick(type)
                     })
-                    .padding(16.dp)
+                    .background(NeutralGray100)
+                    .padding(8.dp)
             ) {
-                Text(type.description)
+                Text(
+                    text = type.description,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = NeutralGray700
+                )
             }
-            HorizontalDivider()
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = NeutralGray200.copy(alpha = 0.3f),
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
         }
     }
 }
