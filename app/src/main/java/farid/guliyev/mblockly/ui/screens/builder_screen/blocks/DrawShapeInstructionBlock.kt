@@ -12,6 +12,7 @@ import farid.guliyev.mblockly.ui.components.button.EnableInstructionFieldsButton
 import farid.guliyev.mblockly.ui.components.SingleInstructionContainer
 import farid.guliyev.mblockly.ui.components.InstructionField
 import farid.guliyev.mblockly.domain.model.Instruction.Visuals.DrawShape.OptionalFields.*
+import farid.guliyev.mblockly.ui.components.OptionalInstructionField
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -75,27 +76,33 @@ fun DrawShapeInstructionBlock(
             )
 
             /** === Optional field visibility checks === */
-            if (instruction.enabledOptionalFields.contains(CORNER_RADIUS_FIELD)) {
-                InstructionField(
-                    instruction = instruction,
-                    instructionField = instruction.cornerRadius,
-                    onValueChanged = onEditInstruction
-                )
-            }
-            if (instruction.enabledOptionalFields.contains(COLOR_FIELD)) {
-                InstructionField(
-                    instruction = instruction,
-                    instructionField = instruction.color,
-                    onValueChanged = onEditInstruction
-                )
-            }
-            if (instruction.enabledOptionalFields.contains(SCALE_FIELD)) {
-                InstructionField(
-                    instruction = instruction,
-                    instructionField = instruction.scaleField,
-                    onValueChanged = onEditInstruction
-                )
-            }
+            OptionalInstructionField(
+                enabledOptionalFields = instruction.enabledOptionalFields,
+                optionalField = CORNER_RADIUS_FIELD,
+                name = { it.name },
+                instruction = instruction,
+                instructionField = instruction.cornerRadius,
+                onValueChanged = onEditInstruction,
+                onDisable = onEditInstruction
+            )
+            OptionalInstructionField(
+                enabledOptionalFields = instruction.enabledOptionalFields,
+                optionalField = COLOR_FIELD,
+                name = { it.name },
+                instruction = instruction,
+                instructionField = instruction.color,
+                onValueChanged = onEditInstruction,
+                onDisable = onEditInstruction
+            )
+            OptionalInstructionField(
+                enabledOptionalFields = instruction.enabledOptionalFields,
+                optionalField = SCALE_FIELD,
+                name = { it.name },
+                instruction = instruction,
+                instructionField = instruction.scaleField,
+                onValueChanged = onEditInstruction,
+                onDisable = onEditInstruction
+            )
 
             /** === Optional fields add button === */
             if (instruction.enabledOptionalFields.size < Instruction.Visuals.DrawShape.OptionalFields.entries.size) {

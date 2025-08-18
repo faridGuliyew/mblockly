@@ -3,6 +3,7 @@ package farid.guliyev.mblockly.ui.components
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
@@ -44,6 +45,7 @@ fun <T, P> InstructionField(
     instruction: P,
     instructionField: InstructionField<T, P>,
     onValueChanged: (P) -> Unit,
+    trailingContent: @Composable () -> Unit = {}
 ) {
     var isInputValid by remember { mutableStateOf(true) }
     var input by remember(instructionField.value) { mutableStateOf(instructionField.toString()) }
@@ -59,6 +61,7 @@ fun <T, P> InstructionField(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         modifier = Modifier
             .clip(RoundedCornerShape(16.dp))
             .background(
@@ -82,7 +85,7 @@ fun <T, P> InstructionField(
             fontWeight = FontWeight.SemiBold,
             color = if (isInputValid) NeutralGray700 else ErrorRed
         )
-        Spacer(Modifier.width(12.dp))
+
         CustomTextField(
             value = input,
             onValueChange = { newInput ->
@@ -94,5 +97,7 @@ fun <T, P> InstructionField(
             },
             isError = !isInputValid
         )
+
+        trailingContent()
     }
 }

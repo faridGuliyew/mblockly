@@ -10,9 +10,15 @@ import farid.guliyev.mblockly.ui.components.StringValidator
 
 sealed interface Instruction {
 
-    fun enableOptionalFieldByName(name: String) : Instruction {
+    fun changeOptionalFieldByName(name: String, isEnabled: Boolean) : Instruction {
         if (this is Visuals.DrawShape) {
-            return this.updateField(enabledOptionalFields = enabledOptionalFields + Visuals.DrawShape.OptionalFields.valueOf(name))
+            val field = Visuals.DrawShape.OptionalFields.valueOf(name)
+            var updatedInstruction = this.updateField(
+                enabledOptionalFields = if (isEnabled) enabledOptionalFields + field else enabledOptionalFields - field
+            )
+
+            if (!isEnabled) { updatedInstruction = updatedInstruction.resetOptionalField(field ) }
+            return updatedInstruction
         }
 
         else error("Unsupported operation: enableOptionalFieldByName($name)")
@@ -110,6 +116,24 @@ sealed interface Instruction {
                     scaleField = this.scaleField.copy(value = scale),
                     enabledOptionalFields = enabledOptionalFields
                 )
+            }
+
+            fun resetOptionalField(
+                field: OptionalFields
+            ) : DrawShape {
+                return when(field) {
+                    OptionalFields.CORNER_RADIUS_FIELD -> {
+                        updateField(cornerRadius = "0")
+                    }
+
+                    OptionalFields.COLOR_FIELD -> {
+                        updateField(color = "FF0000FF")
+                    }
+
+                    OptionalFields.SCALE_FIELD -> {
+                        updateField(scale = "1")
+                    }
+                }
             }
         }
     }

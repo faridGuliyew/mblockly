@@ -1,6 +1,5 @@
 package farid.guliyev.mblockly.ui.screens.builder_screen
 
-import android.util.Log
 import farid.guliyev.mblockly.core.base.BaseViewModel
 import farid.guliyev.mblockly.core.exception_handling.AppException
 import farid.guliyev.mblockly.core.exception_handling.failGracefully
@@ -13,7 +12,6 @@ import farid.guliyev.mblockly.domain.model.init
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.jvm.Throws
 
 class BuilderViewModel : BaseViewModel() {
 
@@ -98,7 +96,7 @@ class BuilderViewModel : BaseViewModel() {
     fun enableInstructionOptionalField(fieldName: String) {
         val instruction = subState.value.enableOptionalFieldInstructionAndIndex?.first ?: return
 
-        val newInstruction = instruction.copy(instruction = instruction.instruction.enableOptionalFieldByName(fieldName))
+        val newInstruction = instruction.copy(instruction = instruction.instruction.changeOptionalFieldByName(fieldName, isEnabled = true))
         val selectedInstructionIndex = subState.value.enableOptionalFieldInstructionAndIndex?.second ?: -1
 
         updateInstruction(selectedInstructionIndex, newInstruction)
