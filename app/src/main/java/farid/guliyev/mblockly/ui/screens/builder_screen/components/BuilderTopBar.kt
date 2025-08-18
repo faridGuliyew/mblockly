@@ -36,7 +36,9 @@ import farid.guliyev.mblockly.ui.theme.NeutralGray700
 import farid.guliyev.mblockly.ui.theme.SuccessGreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Share
 import farid.guliyev.mblockly.ui.components.button.AppIconButtonBackgrounded
+import farid.guliyev.mblockly.ui.theme.InfoBlue
 
 enum class TopBarMode {
     ADD_INSTRUCTION, ENABLE_FIELD, HIDDEN
@@ -51,6 +53,7 @@ fun BuilderTopBar(
     enableFieldList: List<String> = emptyList(),
     onEnableField: (String) -> Unit,
     onExecute: () -> Unit,
+    onShare: () -> Unit,
     onHide: () -> Unit
 ) {
     Column (
@@ -79,6 +82,12 @@ fun BuilderTopBar(
                         onExecute = onHide
                     )
                 }
+
+                AppIconButtonBackgrounded(
+                    icon = Icons.Default.Share,
+                    color = InfoBlue,
+                    onExecute = onShare
+                )
 
                 AppIconButtonBackgrounded(
                     icon = Icons.Default.PlayArrow,
@@ -167,5 +176,7 @@ private fun TopBarPrev() {
         mode = TopBarMode.ADD_INSTRUCTION,
         supportedInstructions = listOf(),
         enableFieldList = listOf(),
-        onEnableField = {}, )
+        onEnableField = {},
+        onShare = {}
+        )
 }

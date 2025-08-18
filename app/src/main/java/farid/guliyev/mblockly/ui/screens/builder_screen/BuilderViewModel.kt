@@ -9,6 +9,7 @@ import farid.guliyev.mblockly.domain.TARGET_BLOCK_IS_NOT_GROUP
 import farid.guliyev.mblockly.domain.model.ExceptionType
 import farid.guliyev.mblockly.domain.model.InstructionType
 import farid.guliyev.mblockly.domain.model.init
+import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -162,6 +163,8 @@ class BuilderViewModel : BaseViewModel() {
     fun hideTopBarMenu() {
         subState.update { it.copy(topBarMode = TopBarMode.HIDDEN) }
     }
+
+    fun showShareSheet() { showSheet(SheetType.SHARE) }
 
     /** Below functions primarily interact with subState. MAY OR MAY NOT interact with main state */
 }

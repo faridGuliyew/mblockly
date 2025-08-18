@@ -3,6 +3,7 @@ package farid.guliyev.mblockly.ui.screens.builder_screen
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import farid.guliyev.mblockly.domain.model.Instruction
 import farid.guliyev.mblockly.domain.model.optionalFields
+import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderViewModel.Companion.MAIN_GROUP_NAME
 import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderViewModel.Companion.ROOT
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
@@ -20,6 +21,7 @@ class BuilderState (
 
 data class BuilderSubState(
     val topBarMode: TopBarMode = TopBarMode.HIDDEN,
+    val sheetType: SheetType = SheetType.HIDDEN,
     val addSingleInstructionParentId: String? = null,
     val enableOptionalFieldInstructionAndIndex : Pair<InstructionBlock.SingleInstruction, Int>? = null,
     val focusedEditInstructionGroupsWithIndices : List<Pair<InstructionBlock.InstructionGroup, Int>> = emptyList()

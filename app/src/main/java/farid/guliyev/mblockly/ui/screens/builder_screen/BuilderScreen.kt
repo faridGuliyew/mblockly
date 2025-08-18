@@ -41,12 +41,12 @@ import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
 import farid.guliyev.mblockly.ui.theme.AccentEmerald
 
 @Composable
-fun BuilderScreen() {
+fun BuilderScreen(
+    viewModel: BuilderViewModel, // Methods are called directly, for performance reasons (otherwise lambas are unstable)
+    state: BuilderState,
+    subState: BuilderSubState
+) {
     var isRunning by remember { mutableStateOf(false) }
-    val viewModel = remember { BuilderViewModel() }
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val subState by viewModel.subState.collectAsStateWithLifecycle()
-
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -57,6 +57,7 @@ fun BuilderScreen() {
                 onAddInstruction = viewModel::addSingleInstruction,
                 enableFieldList = subState.enableOptionalFieldList,
                 onEnableField = viewModel::enableInstructionOptionalField,
+                onShare = viewModel::showShareSheet,
                 onExecute = { isRunning = true }
             )
         }
@@ -309,5 +310,5 @@ fun SingleInstructionDrawer(
 @Preview
 @Composable
 private fun BuilderScreenPrev() {
-    BuilderScreen()
+    BuilderScreen(BuilderViewModel(), BuilderState(), BuilderSubState())
 }

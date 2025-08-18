@@ -16,6 +16,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import farid.guliyev.mblockly.di.CommsModule
 import farid.guliyev.mblockly.domain.model.Alert
 import farid.guliyev.mblockly.ui.components.alert.TopAlert
+import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderRoute
 import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderScreen
 import farid.guliyev.mblockly.ui.theme.MBlocklyTheme
 import kotlinx.coroutines.delay
@@ -37,7 +38,7 @@ class MainActivity : ComponentActivity() {
                             focusManager.clearFocus()
                         })
                 ) {
-                    BuilderScreen()
+                    BuilderRoute()
                 }
 
                 // Show global alerts

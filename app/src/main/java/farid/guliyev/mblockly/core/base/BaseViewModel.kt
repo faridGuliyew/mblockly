@@ -5,11 +5,24 @@ import androidx.lifecycle.viewModelScope
 import farid.guliyev.mblockly.di.CommsModule
 import farid.guliyev.mblockly.di.sendException
 import farid.guliyev.mblockly.di.trySendException
+import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 abstract class BaseViewModel : ViewModel() {
+
+    val sheetState = MutableStateFlow(SheetType.HIDDEN)
+
+    protected fun showSheet(type: SheetType) {
+        sheetState.update { type }
+    }
+
+    fun hideSheet() {
+        sheetState.update { SheetType.HIDDEN }
+    }
 
     /** WARNING: This method is not suspending/blocking. Runs in a background thread. Use suspend variant for synchronous operations */
     fun runSafelyInBg(
