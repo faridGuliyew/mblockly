@@ -15,6 +15,7 @@ fun SingleInstructionContainer(
     onMoveOut: () -> Unit,
     onMoveIn: () -> Unit,
     onToggleMinimize: () -> Unit,
+    onDuplicate: () -> Unit,
     content: @Composable () -> Unit
 ) {
     InstructionContainer(
@@ -27,6 +28,7 @@ fun SingleInstructionContainer(
         onMoveIn = onMoveIn,
         onMoveDown = onMoveDown,
         onToggleMinimize = onToggleMinimize,
+        onDuplicate = onDuplicate,
         content = content
     )
 }
@@ -44,7 +46,8 @@ private fun SingleInstructionContainerPrev() {
         onToggleMinimize = {},
         content = {},
         onMoveIn = {},
-        onMoveOut = {}
+        onMoveOut = {},
+        onDuplicate = {}
 
     )
 }

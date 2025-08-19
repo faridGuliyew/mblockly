@@ -38,6 +38,28 @@ sealed class InstructionBlock {
     abstract val isMinimized: Boolean
     abstract fun copy(parentId: String = this.parentId, isMinimized: Boolean = this.isMinimized) : InstructionBlock
 
+    /** WARNING: Performance hit can be significant, if block is huge. */
+    fun hardCopy(): InstructionBlock {
+        return when (this) {
+            is SingleInstruction -> {
+                SingleInstruction(
+                    instruction = instruction,
+                    parentId = parentId,
+                    isMinimized = isMinimized
+                )
+            }
+            is InstructionGroup -> {
+                InstructionGroup(
+                    instructionBlocks = SnapshotStateList<InstructionBlock>().also { list ->
+                        this.instructionBlocks.forEach { block -> list.add(block.hardCopy()) } // recursively deep copy
+                    },
+                    parentId = parentId,
+                    isMinimized = isMinimized
+                )
+            }
+        }
+    }
+
     @Serializable
     data class SingleInstruction(
         @Serializable(with = InstructionRuntimeSerializer::class)

@@ -13,21 +13,6 @@ import kotlinx.serialization.Serializable
 sealed interface InstructionRuntime {
     val base : Instruction
 
-    companion object {
-        fun fromBase(base: Instruction): InstructionRuntime {
-            return when (base) {
-                is Wait -> Controls.Wait(base)
-                is DefineFloat -> Variables.DefineFloat(base)
-                is Instruction.Animations.AnimateFloat -> Animations.AnimateFloat(base)
-                is Instruction.Visuals.DrawShape -> Visuals.DrawShape(base)
-                is Instruction.Variables.DefineInteger -> error("$base")
-                is Instruction.Variables.DefineString -> error("$base")
-                // add other instruction types here
-            }
-        }
-
-    }
-
     // ------------------- CONTROLS -------------------
     sealed interface Controls : InstructionRuntime {
         class Wait(override val base: Instruction.Controls.Wait = Instruction.Controls.Wait()) : Controls {
@@ -128,6 +113,8 @@ sealed interface InstructionRuntime {
 @Serializable
 sealed interface Instruction {
 
+    fun buildRuntime() : InstructionRuntime
+
     fun changeOptionalFieldByName(name: String, isEnabled: Boolean) : Instruction {
         if (this is Visuals.DrawShape) {
             val field = Visuals.DrawShape.OptionalFields.valueOf(name)
@@ -151,16 +138,28 @@ sealed interface Instruction {
             fun updateField(
                 duration: String
             ) = Wait(durationField = this.durationField.copy(value = duration))
+
+            override fun buildRuntime(): InstructionRuntime {
+                return InstructionRuntime.Controls.Wait(this)
+            }
         }
     }
 
     @Serializable
     sealed interface Variables : Instruction {
         @Serializable
-        data class DefineString(val name: String = "word", val value: String = "") : Variables
+        data class DefineString(val name: String = "word", val value: String = "") : Variables {
+            override fun buildRuntime(): InstructionRuntime {
+                error("buildRuntime: $this")
+            }
+        }
 
         @Serializable
-        data class DefineInteger(val name: String = "integer", val value: Int = 0) : Variables
+        data class DefineInteger(val name: String = "integer", val value: Int = 0) : Variables {
+            override fun buildRuntime(): InstructionRuntime {
+                error("buildRuntime: $this")
+            }
+        }
 
         @Serializable
         data class DefineFloat(
@@ -171,6 +170,10 @@ sealed interface Instruction {
                 name: String = this.nameField.value,
                 value: String = this.valueField.value
             ): DefineFloat = DefineFloat(nameField = this.nameField.copy(value = name), valueField = this.valueField.copy(value = value))
+
+            override fun buildRuntime(): InstructionRuntime {
+                return InstructionRuntime.Variables.DefineFloat(this)
+            }
         }
     }
 
@@ -192,6 +195,10 @@ sealed interface Instruction {
                     valueField = this.valueField.copy(value = value),
                     durationField = this.durationField.copy(value = duration)
                 )
+
+            override fun buildRuntime(): InstructionRuntime {
+                return InstructionRuntime.Animations.AnimateFloat(this)
+            }
         }
     }
 
@@ -242,6 +249,10 @@ sealed interface Instruction {
                     OptionalFields.COLOR_FIELD -> updateField(color = "FF0000FF")
                     OptionalFields.SCALE_FIELD -> updateField(scale = "1")
                 }
+
+            override fun buildRuntime(): InstructionRuntime {
+                return InstructionRuntime.Visuals.DrawShape(this)
+            }
         }
     }
 }

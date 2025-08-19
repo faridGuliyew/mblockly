@@ -25,6 +25,7 @@ fun DrawShapeInstructionBlock(
     onToggleMinimize: () -> Unit,
     onRemoveInstruction: () -> Unit,
     onAddInstructionField: () -> Unit,
+    onDuplicate: () -> Unit,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
     onMoveOut: () -> Unit,
@@ -39,7 +40,8 @@ fun DrawShapeInstructionBlock(
         onMoveOut = onMoveOut,
         onMoveIn = onMoveIn,
         isMinimized = isMinimized,
-        onToggleMinimize = onToggleMinimize
+        onToggleMinimize = onToggleMinimize,
+        onDuplicate = onDuplicate
     ) {
         // Inputs row
         FlowRow(
@@ -119,6 +121,6 @@ private fun DrawShapeBlockComponentPrev() {
         onMoveDown = {}, onMoveUp = {}, onAddInstructionField = {}, onToggleMinimize = {},
         isMinimized = false,
         onMoveOut = {},
-        onMoveIn = {}
+        onMoveIn = {}, onDuplicate = {}
     )
 }

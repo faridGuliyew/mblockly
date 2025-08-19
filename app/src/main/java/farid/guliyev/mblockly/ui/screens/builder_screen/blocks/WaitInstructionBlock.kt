@@ -20,6 +20,7 @@ fun WaitInstructionBlock(
     onEditInstruction: (InstructionRuntime.Controls.Wait) -> Unit,
     onRemoveInstruction: () -> Unit,
     onAddInstructionField: () -> Unit,
+    onDuplicate: () -> Unit,
     onToggleMinimize: () -> Unit,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
@@ -36,6 +37,7 @@ fun WaitInstructionBlock(
         onToggleMinimize = onToggleMinimize,
         onMoveOut = onMoveOut,
         onMoveIn = onMoveIn,
+        onDuplicate = onDuplicate
     ) {
         // Inputs row
         FlowRow(

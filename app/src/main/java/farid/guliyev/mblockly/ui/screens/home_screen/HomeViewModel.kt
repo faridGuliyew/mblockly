@@ -2,6 +2,7 @@ package farid.guliyev.mblockly.ui.screens.home_screen
 
 import android.content.Context
 import farid.guliyev.mblockly.core.base.BaseViewModel
+import farid.guliyev.mblockly.core.exception_handling.failGracefully
 import farid.guliyev.mblockly.di.NavigationController
 import farid.guliyev.mblockly.di.NavigationModule
 import farid.guliyev.mblockly.ui.navigation.BuilderRoute
@@ -17,13 +18,19 @@ class HomeViewModel (
 
     val state = MutableStateFlow(HomeState())
 
+    fun importProject(context: Context) {
+        runSafelyInBg {
+            failGracefully("Not yet supported")
+        }
+    }
+
     fun loadProjects(context: Context) {
         runSafelyInBg {
             val filesDir = context.filesDir
             val formatter = DateFormat.getInstance()
             val mbFiles = filesDir.listFiles { file -> file.extension.lowercase() == "mb" }?.map { SavedFile(
                 name = it.name, lastModified = formatter.format(Date(it.lastModified()))
-            ) }.orEmpty()
+            ) }?.reversed().orEmpty()
 
             state.update { it.copy(projectFiles = mbFiles) }
         }

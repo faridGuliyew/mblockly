@@ -29,6 +29,6 @@ object InstructionRuntimeSerializer : KSerializer<InstructionRuntime> {
         val base = Json.decodeFromJsonElement(Instruction.serializer(), element)
 
         // wrap back into the correct runtime
-        return InstructionRuntime.fromBase(base)
+        return base.buildRuntime()
     }
 }

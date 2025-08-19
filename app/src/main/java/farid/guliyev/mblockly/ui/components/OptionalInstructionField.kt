@@ -31,7 +31,8 @@ fun <T, P: InstructionRuntime, O> OptionalInstructionField(
                     icon = Icons.Default.Close,
                     color = ErrorRed,
                     onClick = {
-                        onDisable(InstructionRuntime.fromBase(instruction.base.changeOptionalFieldByName(name(optionalField), isEnabled = false)) as P)
+                        val newBase = instruction.base.changeOptionalFieldByName(name(optionalField), isEnabled = false)
+                        onDisable(newBase.buildRuntime() as P)
                     }
                 )
             }

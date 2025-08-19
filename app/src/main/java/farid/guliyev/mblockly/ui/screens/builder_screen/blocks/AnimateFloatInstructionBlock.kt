@@ -21,6 +21,7 @@ fun AnimateFloatInstructionBlock(
     onRemoveInstruction: () -> Unit,
     onAddInstructionField: () -> Unit,
     onToggleMinimize: () -> Unit,
+    onDuplicate: () -> Unit,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
     onMoveOut: () -> Unit,
@@ -36,6 +37,7 @@ fun AnimateFloatInstructionBlock(
         onToggleMinimize = onToggleMinimize,
         onMoveOut = onMoveOut,
         onMoveIn = onMoveIn,
+        onDuplicate = onDuplicate
     ) {
         // Inputs row
         FlowRow(

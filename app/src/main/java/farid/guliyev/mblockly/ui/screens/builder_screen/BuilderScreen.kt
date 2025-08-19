@@ -79,6 +79,7 @@ fun BuilderScreen(
                 onMoveIn = viewModel::moveInstructionIn,
                 onMoveOut = viewModel::moveInstructionOut,
                 onAddInstructionGroup = viewModel::addInstructionGroup,
+                onDuplicate = viewModel::duplicateInstruction,
 
                 onEnableFocusModeForGroup = viewModel::enableFocusEditingForGroup,
                 onEnableSingleInstructionOptionalField = viewModel::showEnableSingleInstructionOptionalField,
@@ -87,7 +88,9 @@ fun BuilderScreen(
 
             subState.focusedEditInstructionGroupsWithIndices.forEach { groupWithIndex ->
                 Column(
-                    modifier = Modifier.fillMaxSize().background(color = BackgroundPrimary)
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(color = BackgroundPrimary)
                         .verticalScroll(rememberScrollState())) {
                     InstructionBlockDrawer(
                         block = groupWithIndex.first.copy(isMinimized = false),
@@ -101,6 +104,7 @@ fun BuilderScreen(
                         onAddInstructionGroup = viewModel::addInstructionGroup,
                         onEnableSingleInstructionOptionalField = viewModel::showEnableSingleInstructionOptionalField,
                         onAddSingleInstruction = viewModel::showAddSingleInstructionOptions,
+                        onDuplicate = viewModel::duplicateInstruction,
                         onEnableFocusModeForGroup = { index, group ->
                             if (group.id == groupWithIndex.first.id) return@InstructionBlockDrawer
 
@@ -144,6 +148,7 @@ fun InstructionBlockDrawer(
     onEnableFocusModeForGroup: (index: Int, group: InstructionBlock.InstructionGroup) -> Unit,
     onAddInstructionGroup: (parentGroupId: String) -> Unit,
     onAddSingleInstruction: (parentGroupId: String) -> Unit,
+    onDuplicate: (index: Int, InstructionBlock) -> Unit
 ) {
     when (block) {
         is InstructionBlock.SingleInstruction -> {
@@ -158,6 +163,7 @@ fun InstructionBlockDrawer(
                 onMoveDown = { onMoveDown(index, block) },
                 onMoveOut = { onMoveOut(index, block) },
                 onMoveIn =  { onMoveIn(index, block) },
+                onDuplicate = { onDuplicate(index, block) },
                 onAddInstructionField = { onEnableSingleInstructionOptionalField(index, block) }
             )
         }
@@ -175,6 +181,7 @@ fun InstructionBlockDrawer(
                 onMoveIn =  { onMoveIn(index, block) },
                 onToggleMinimize = { onUpdateInstruction(index, block.copy(isMinimized = !block.isMinimized)) },
                 onEditSeparately = { onEnableFocusModeForGroup(index, block) },
+                onDuplicate = { onDuplicate(index, block) },
                 backgroundColor = AccentEmerald.copy(alpha = 0.1f),
                 borderColor = AccentEmerald,
                 innerPadding = PaddingValues(8.dp),
@@ -197,7 +204,8 @@ fun InstructionBlockDrawer(
                                 onEnableSingleInstructionOptionalField = onEnableSingleInstructionOptionalField,
                                 onAddInstructionGroup = onAddInstructionGroup,
                                 onAddSingleInstruction = onAddSingleInstruction,
-                                onEnableFocusModeForGroup = onEnableFocusModeForGroup
+                                onEnableFocusModeForGroup = onEnableFocusModeForGroup,
+                                onDuplicate = onDuplicate
                             )
                         }
 
@@ -233,6 +241,7 @@ fun SingleInstructionDrawer(
     onRemoveInstruction: () -> Unit,
     onAddInstructionField: () -> Unit,
     onToggleMinimize: () -> Unit,
+    onDuplicate: () -> Unit,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
     onMoveOut: () -> Unit,
@@ -252,7 +261,8 @@ fun SingleInstructionDrawer(
                 onMoveDown = onMoveDown,
                 onMoveOut = onMoveOut,
                 onMoveIn = onMoveIn,
-                onAddInstructionField = onAddInstructionField
+                onAddInstructionField = onAddInstructionField,
+                onDuplicate = onDuplicate
             )
         }
 
@@ -268,7 +278,8 @@ fun SingleInstructionDrawer(
                 onMoveDown = onMoveDown,
                 onMoveOut = onMoveOut,
                 onMoveIn = onMoveIn,
-                onAddInstructionField = onAddInstructionField
+                onAddInstructionField = onAddInstructionField,
+                onDuplicate = onDuplicate
             )
         }
 
@@ -284,7 +295,8 @@ fun SingleInstructionDrawer(
                 onMoveDown = onMoveDown,
                 onMoveOut = onMoveOut,
                 onMoveIn = onMoveIn,
-                onAddInstructionField = onAddInstructionField
+                onAddInstructionField = onAddInstructionField,
+                onDuplicate = onDuplicate
             )
         }
 
@@ -300,7 +312,8 @@ fun SingleInstructionDrawer(
                 onMoveDown = onMoveDown,
                 onMoveOut = onMoveOut,
                 onMoveIn = onMoveIn,
-                onAddInstructionField = onAddInstructionField
+                onAddInstructionField = onAddInstructionField,
+                onDuplicate = onDuplicate
             )
         }
 

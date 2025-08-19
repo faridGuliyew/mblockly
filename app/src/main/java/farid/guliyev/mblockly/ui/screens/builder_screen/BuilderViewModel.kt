@@ -96,6 +96,14 @@ class BuilderViewModel (
         }
     }
 
+    fun duplicateInstruction(index: Int, block: InstructionBlock) {
+        runSafelyInBg {
+            if (block is InstructionBlock.InstructionGroup) failGracefully("Groups do not support this feature yet")
+            val parent = block.getParent()
+            parent.instructionBlocks.add(index + 1, block.hardCopy())
+        }
+    }
+
     /** ==== Below functions PRIMARILY interact with STATE. MAY OR MAY NOT interact with main substate ==== */
 
     fun addSingleInstruction(type: InstructionType) {
@@ -118,7 +126,7 @@ class BuilderViewModel (
             val block = subState.value.enableOptionalFieldInstructionAndIndex?.first ?: return@runSafelyInBg
 
             val updatedBase = block.instruction.base.changeOptionalFieldByName(fieldName, isEnabled = true)
-            val newInstruction = InstructionRuntime.fromBase(updatedBase)
+            val newInstruction = updatedBase.buildRuntime()
             val selectedInstructionIndex = subState.value.enableOptionalFieldInstructionAndIndex?.second ?: -1
 
             updateInstruction(selectedInstructionIndex, block.copy(instruction = newInstruction))

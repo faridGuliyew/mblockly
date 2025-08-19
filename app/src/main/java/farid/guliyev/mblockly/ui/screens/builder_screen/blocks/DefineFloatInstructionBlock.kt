@@ -22,6 +22,7 @@ fun DefineFloatInstructionBlock(
     onRemoveInstruction: () -> Unit,
     onAddInstructionField: () -> Unit,
     onToggleMinimize: () -> Unit,
+    onDuplicate: () -> Unit,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
     onMoveOut: () -> Unit,
@@ -37,6 +38,7 @@ fun DefineFloatInstructionBlock(
         onToggleMinimize = onToggleMinimize,
         onMoveOut = onMoveOut,
         onMoveIn = onMoveIn,
+        onDuplicate = onDuplicate
     ) {
         // Inputs row
         FlowRow(
@@ -65,6 +67,6 @@ private fun DrawShapeBlockComponentPrev() {
         onEditInstruction = {},
         onRemoveInstruction = {},
         onMoveDown = {}, onMoveUp = {}, onAddInstructionField = {}, onToggleMinimize = {},isMinimized = false,
-        onMoveOut = {}, onMoveIn = {}
+        onMoveOut = {}, onMoveIn = {}, onDuplicate = {}
     )
 }

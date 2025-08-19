@@ -98,15 +98,15 @@ fun HomeScreen(
                 )
                 
 //                // Load Project Option
-//                HomeOptionCard(
-//                    icon = ImageVector.vectorResource(R.drawable.ic_save),
-//                    title = "Load Project",
-//                    description = "Open an existing project file",
-//                    onClick = {
-//                        viewModel.loadProjects(context = context)
-//                    },
-//                    isPrimary = false
-//                )
+                HomeOptionCard(
+                    icon = ImageVector.vectorResource(R.drawable.ic_save),
+                    title = "Import Project",
+                    description = "Open an existing project file",
+                    onClick = {
+                        viewModel.importProject(context = context)
+                    },
+                    isPrimary = false
+                )
             }
             
             Spacer(modifier = Modifier.height(32.dp))

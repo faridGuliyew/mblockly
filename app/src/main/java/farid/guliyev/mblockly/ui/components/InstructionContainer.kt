@@ -2,6 +2,7 @@ package farid.guliyev.mblockly.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,10 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import farid.guliyev.mblockly.R
 import farid.guliyev.mblockly.ui.components.button.AppIconButton
 import farid.guliyev.mblockly.ui.theme.BackgroundSecondary
 import farid.guliyev.mblockly.ui.theme.NeutralGray700
@@ -47,7 +51,8 @@ fun InstructionContainer(
     onMoveDown: () -> Unit,
     onMoveIn: () -> Unit,
     onMoveOut: () -> Unit,
-    onToggleMinimize: (() -> Unit)? = null,
+    onToggleMinimize: () -> Unit,
+    onDuplicate: (() -> Unit)? = null,
     onEditSeparately: (() -> Unit)? = null,
     borderColor: Color = PrimaryBlue,
     backgroundColor: Color = BackgroundSecondary,
@@ -74,17 +79,22 @@ fun InstructionContainer(
             .padding(innerPadding)
     ) {
         Row (verticalAlignment = Alignment.CenterVertically) {
-            // Index badge
-            InstructionIndex(index = index)
-            Spacer(modifier = Modifier.width(12.dp))
-            // Label
-            Text(
-                modifier = Modifier.weight(1F),
-                text = label,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = NeutralGray700
-            )
+            Row (
+                modifier = Modifier.weight(1F)
+                    .clickable(onClick = onToggleMinimize),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Index badge
+                InstructionIndex(index = index)
+                // Label
+                Text(
+                    text = label,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = NeutralGray700
+                )
+            }
             Row (horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 // Move up
                 AppIconButton(
@@ -102,9 +112,9 @@ fun InstructionContainer(
                 )
                 // Remove button
                 AppIconButton(onClick = onRemove, icon = Icons.Default.Close, color = ErrorRed)
-                onToggleMinimize?.let {
+                onDuplicate?.let {
                     // Minimize button
-                    AppIconButton(onClick = onToggleMinimize, icon = Icons.Default.MoreVert, color = NeutralGray700)
+                    AppIconButton(onClick = onDuplicate, icon = ImageVector.vectorResource(R.drawable.ic_copy), color = NeutralGray700)
                 }
                 onEditSeparately?.let {
                     // Edit separately button
@@ -134,6 +144,8 @@ private fun InstructionContainerPrev() {
         content = {},
         innerPadding = PaddingValues(vertical = 4.dp, horizontal = 2.dp),
         isMinimized = false,
+        onToggleMinimize = {},
+        onDuplicate = {}
 
     )
 }
