@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -27,8 +26,8 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import farid.guliyev.mblockly.domain.model.Instruction
+import farid.guliyev.mblockly.domain.model.instruction.Instruction
+import farid.guliyev.mblockly.domain.model.instruction.InstructionRuntime
 import farid.guliyev.mblockly.ui.components.button.AddInstructionButton
 import farid.guliyev.mblockly.ui.components.InstructionContainer
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.AnimateFloatInstructionBlock
@@ -58,8 +57,8 @@ fun BuilderScreen(
                 enableFieldList = subState.enableOptionalFieldList,
                 onEnableField = viewModel::enableInstructionOptionalField,
                 onShare = viewModel::showShareSheet,
-                onExecute = { isRunning = true },
-                onBack = {}
+                onBack = viewModel::goBack,
+                onExecute = { isRunning = true }
             )
         }
     ) { innerPadding ->
@@ -225,10 +224,10 @@ fun InstructionBlockDrawer(
 
 @Composable
 fun SingleInstructionDrawer(
-    instruction: Instruction,
+    instruction: InstructionRuntime,
     index: Int,
     isMinimized : Boolean,
-    onEditInstruction: (Instruction) -> Unit,
+    onEditInstruction: (InstructionRuntime) -> Unit,
     onRemoveInstruction: () -> Unit,
     onAddInstructionField: () -> Unit,
     onToggleMinimize: () -> Unit,
@@ -239,7 +238,7 @@ fun SingleInstructionDrawer(
 ) {
     // Your block
     when (instruction) {
-        is Instruction.Visuals.DrawShape -> {
+        is InstructionRuntime.Visuals.DrawShape -> {
             DrawShapeInstructionBlock(
                 index = index,
                 instruction = instruction,
@@ -255,7 +254,7 @@ fun SingleInstructionDrawer(
             )
         }
 
-        is Instruction.Variables.DefineFloat -> {
+        is InstructionRuntime.Variables.DefineFloat -> {
             DefineFloatInstructionBlock(
                 index = index,
                 instruction = instruction,
@@ -271,7 +270,7 @@ fun SingleInstructionDrawer(
             )
         }
 
-        is Instruction.Animations.AnimateFloat -> {
+        is InstructionRuntime.Animations.AnimateFloat -> {
             AnimateFloatInstructionBlock(
                 index = index,
                 instruction = instruction,
@@ -287,7 +286,7 @@ fun SingleInstructionDrawer(
             )
         }
 
-        is Instruction.Controls.Wait -> {
+        is InstructionRuntime.Controls.Wait -> {
             WaitInstructionBlock(
                 index = index,
                 instruction = instruction,
@@ -303,13 +302,13 @@ fun SingleInstructionDrawer(
             )
         }
 
-        is Instruction.Variables.DefineInteger -> TODO()
-        is Instruction.Variables.DefineString -> TODO()
+//        is InstructionRuntime.Variables.DefineInteger -> TODO()
+//        is InstructionRuntime.Variables.DefineString -> TODO()
     }
 }
 
 @Preview
 @Composable
 private fun BuilderScreenPrev() {
-    BuilderScreen(BuilderViewModel(), BuilderState(), BuilderSubState())
+//    BuilderScreen(BuilderViewModel(), BuilderState(), BuilderSubState())
 }

@@ -7,7 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
-import farid.guliyev.mblockly.domain.model.Instruction
+import farid.guliyev.mblockly.domain.model.instruction.Instruction
 import farid.guliyev.mblockly.ui.model.DraggableUiBlock
 
 @Composable

@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.tooling.preview.Preview
 import farid.guliyev.mblockly.domain.UNDEFINED_VARIABLE
-import farid.guliyev.mblockly.domain.model.Instruction
+import farid.guliyev.mblockly.domain.model.instruction.Instruction
 import farid.guliyev.mblockly.ui.model.UiShape
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionBlock
 import farid.guliyev.mblockly.ui.screens.output_screen.components.OutputTopBar
@@ -85,7 +85,7 @@ suspend fun handleInstructionGroup(
             when (block) {
                 is InstructionBlock.SingleInstruction -> {
                     handleSingleInstruction(
-                        instruction = block.instruction,
+                        instruction = block.instruction.base,
                         shapes = shapes,
                         floatVariableStates = floatVariableStates
                     )
@@ -124,12 +124,12 @@ suspend fun handleSingleInstruction(
 
             shapes[instruction.name.value] = UiShape(
                 color = instruction.color.value.toLong(16),
-                width = instruction.width.extractValue(floatVariableStates),
-                height = instruction.height.extractValue(floatVariableStates),
-                cornerRadius = instruction.cornerRadius.extractValue(floatVariableStates),
-                scale = instruction.scaleField.extractValue(floatVariableStates),
-                x = instruction.x.extractValue(floatVariableStates),
-                y = instruction.y.extractValue(floatVariableStates)
+                width = instruction.width.value.extractValue(floatVariableStates),
+                height = instruction.height.value.extractValue(floatVariableStates),
+                cornerRadius = instruction.cornerRadius.value.extractValue(floatVariableStates),
+                scale = instruction.scaleField.value.extractValue(floatVariableStates),
+                x = instruction.x.value.extractValue(floatVariableStates),
+                y = instruction.y.value.extractValue(floatVariableStates)
             )
         }
 

@@ -1,4 +1,4 @@
-package farid.guliyev.mblockly.ui.components.alert
+package farid.guliyev.mblockly.ui.components.dialog
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -8,6 +8,7 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -42,75 +44,87 @@ import farid.guliyev.mblockly.domain.model.Alert
 import farid.guliyev.mblockly.domain.model.AlertType
 import farid.guliyev.mblockly.ui.components.button.AppIconButton
 import farid.guliyev.mblockly.ui.components.button.AppIconButtonBackgrounded
+import farid.guliyev.mblockly.ui.components.button.AppIconButtonBackgroundedWithText
 import farid.guliyev.mblockly.ui.extensions.containerColor
 import farid.guliyev.mblockly.ui.extensions.contentColor
+import farid.guliyev.mblockly.ui.theme.ErrorRed
+import farid.guliyev.mblockly.ui.theme.InfoBlue
+import farid.guliyev.mblockly.ui.theme.NeutralGray200
 import farid.guliyev.mblockly.ui.theme.NeutralGray600
 import farid.guliyev.mblockly.ui.theme.NeutralGray800
+import farid.guliyev.mblockly.ui.theme.SuccessGreen
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
 
+class Confirmation(
+    val title: String = "Confirmation",
+    val description: String
+)
+
 @Composable
-fun TopAlert(
-    alert: Alert?,
-    onDismiss: () -> Unit
+fun TopConfirmation(
+    confirmation: Confirmation?,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
 ) {
     val shape = RoundedCornerShape(bottomStart = 20.dp, bottomEnd = 20.dp)
-    val animationDuration = 1000
-
-    var isAlertVisible by remember(alert) { mutableStateOf(alert != null) }
-
-    LaunchedEffect(isAlertVisible) {
-        if (!isAlertVisible) {
-            delay(animationDuration.toLong())
-            onDismiss()
-        } else {
-            delay(5.seconds)
-            isAlertVisible = false
-        }
-    }
 
     AnimatedVisibility(
-        visible = isAlertVisible,
-        enter = slideInVertically(initialOffsetY = { -it }, animationSpec = tween(animationDuration / 2)) + fadeIn(tween(animationDuration / 2)),
-        exit = slideOutVertically(targetOffsetY = { -it }, animationSpec = tween(animationDuration)) + fadeOut(tween(animationDuration))
+        visible = confirmation != null,
+        enter = slideInVertically(initialOffsetY = { -it }),
+        exit = slideOutVertically(targetOffsetY = { -it })
     ) {
-        val current = alert ?: return@AnimatedVisibility
+        val current = confirmation ?: return@AnimatedVisibility
 
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape)
                 .background(color = Color.White)
                 .background(
-                    color = current.type.containerColor,
+                    color = InfoBlue.copy(0.2F),
                     shape = shape
                 )
                 .border(width = 1.dp, color = NeutralGray600, shape = shape)
                 .padding(horizontal = 20.dp, vertical = 16.dp)
-                .statusBarsPadding()
+                .statusBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 // Title + description
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = current.title,
-                        color = current.type.contentColor,
+                        color = InfoBlue,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = current.description,
-                        color = current.type.contentColor.copy(alpha = 0.9f),
+                        color = InfoBlue.copy(alpha = 0.9f),
                         fontSize = 15.sp
                     )
                 }
+            }
 
-                // Dismiss button
-                AppIconButtonBackgrounded(
+            Row (horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                AppIconButtonBackgroundedWithText(
+                    modifier = Modifier.weight(1F),
                     icon = Icons.Default.Close,
-                    color = current.type.contentColor,
-                    onClick = { isAlertVisible = false }
+                    text = "Dismiss",
+                    color = ErrorRed,
+                    isHighlighted = true,
+                    onClick = onDismiss
+                )
+
+                AppIconButtonBackgroundedWithText(
+                    modifier = Modifier.weight(1F),
+                    icon = Icons.Default.Done,
+                    text = "Confirm",
+                    color = SuccessGreen,
+                    isHighlighted = true,
+                    onClick = onConfirm
                 )
             }
         }
@@ -122,11 +136,10 @@ fun TopAlert(
 @Composable
 private fun TopAlertPrev() {
     Column {
-        AlertType.entries.forEach {
-            TopAlert(
-                alert = Alert("Title", "description", it),
-                onDismiss = {}
-            )
-        }
+        TopConfirmation(
+            confirmation = Confirmation("Title", "description"),
+            onDismiss = {},
+            onConfirm = {}
+        )
     }
 }

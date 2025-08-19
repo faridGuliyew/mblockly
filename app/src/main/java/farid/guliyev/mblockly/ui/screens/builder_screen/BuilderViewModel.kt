@@ -1,16 +1,21 @@
 package farid.guliyev.mblockly.ui.screens.builder_screen
 
 import android.content.Context
+import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.toRoute
 import farid.guliyev.mblockly.core.base.BaseViewModel
 import farid.guliyev.mblockly.core.exception_handling.AppException
 import farid.guliyev.mblockly.core.exception_handling.failGracefully
+import farid.guliyev.mblockly.di.NavigationController
+import farid.guliyev.mblockly.di.NavigationModule
 import farid.guliyev.mblockly.domain.BLOCK_CANNOT_BE_MOVED_FURTHER
 import farid.guliyev.mblockly.domain.NO_SUCH_PARENT_WITH_GROUP_ID
 import farid.guliyev.mblockly.domain.TARGET_BLOCK_IS_NOT_GROUP
 import farid.guliyev.mblockly.domain.model.ExceptionType
-import farid.guliyev.mblockly.domain.model.InstructionType
-import farid.guliyev.mblockly.domain.model.init
+import farid.guliyev.mblockly.domain.model.instruction.InstructionType
+import farid.guliyev.mblockly.domain.model.instruction.init
 import farid.guliyev.mblockly.ui.components.sheet.SheetType
+import farid.guliyev.mblockly.ui.navigation.BuilderRoute
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -18,14 +23,21 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
 
-class BuilderViewModel : BaseViewModel() {
+class BuilderViewModel (
+    savedStateHandle: SavedStateHandle
+) : BaseViewModel() {
+
+    private val navigationController: NavigationController = NavigationModule.navController
 
     companion object {
         const val ROOT = "ROOT"
         const val MAIN_GROUP_NAME = "MAIN"
+
+        val initialGroup = InstructionBlock.InstructionGroup(id = MAIN_GROUP_NAME, parentId = ROOT)
     }
 
-    val state = MutableStateFlow(BuilderState())
+    private val groupFromArgs = savedStateHandle.toRoute<BuilderRoute>().instructionGroup
+    val state = MutableStateFlow(BuilderState(mainInstructionGroup = groupFromArgs ?: initialGroup))
     private val instructionGroupsById = mutableMapOf(MAIN_GROUP_NAME to state.value.mainInstructionGroup)
 
     val subState = MutableStateFlow(BuilderSubState())
@@ -99,12 +111,13 @@ class BuilderViewModel : BaseViewModel() {
     }
 
     fun enableInstructionOptionalField(fieldName: String) {
-        val instruction = subState.value.enableOptionalFieldInstructionAndIndex?.first ?: return
-
-        val newInstruction = instruction.copy(instruction = instruction.instruction.changeOptionalFieldByName(fieldName, isEnabled = true))
-        val selectedInstructionIndex = subState.value.enableOptionalFieldInstructionAndIndex?.second ?: -1
-
-        updateInstruction(selectedInstructionIndex, newInstruction)
+        TODO("NOT YET IMPL.")
+//        val instruction = subState.value.enableOptionalFieldInstructionAndIndex?.first ?: return
+//
+//        val newInstruction = instruction.copy(instruction = instruction.instruction.changeOptionalFieldByName(fieldName, isEnabled = true))
+//        val selectedInstructionIndex = subState.value.enableOptionalFieldInstructionAndIndex?.second ?: -1
+//
+//        updateInstruction(selectedInstructionIndex, newInstruction)
     }
 
     /** === BELOW FUNCTIONS ARE FOR REPETITIVE TASKS - THEY NEVER HANDLE EXCEPTIONS IMPLICITLY!  === */
@@ -175,9 +188,11 @@ class BuilderViewModel : BaseViewModel() {
     /** Below functions do not interact with state at all */
     fun saveToFile(context: Context, fileName: String) {
         runSafelyInBg {
-            val file = File(context.filesDir, fileName)
+            val file = File(context.filesDir, "$fileName.mb")
             val isFileCreated = file.createNewFile()
-            if (!isFileCreated) { failGracefully("This file already exists, pick another name", ExceptionType.WARNING) }
+            if (!isFileCreated) {
+                showConfirmation(description = "This file already exists, do you want to override it?")
+            }
 
             // Write project into file
             val json = Json.encodeToString(state.value.mainInstructionGroup)
@@ -185,5 +200,9 @@ class BuilderViewModel : BaseViewModel() {
 
             showSuccessAlert(message = "File named: $fileName saved successfully!")
         }
+    }
+
+    fun goBack() {
+        navigationController.sendCommand { popBackStack() }
     }
 }

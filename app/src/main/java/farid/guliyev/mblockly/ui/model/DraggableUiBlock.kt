@@ -1,11 +1,8 @@
 package farid.guliyev.mblockly.ui.model
 
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import farid.guliyev.mblockly.domain.model.Instruction
+import farid.guliyev.mblockly.domain.model.instruction.Instruction
 
 data class DraggableUiBlock <T: Instruction>(
     val instruction: T

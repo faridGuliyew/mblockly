@@ -5,18 +5,19 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
-import farid.guliyev.mblockly.domain.model.Instruction
-import farid.guliyev.mblockly.domain.model.type
+import farid.guliyev.mblockly.domain.model.instruction.Instruction
+import farid.guliyev.mblockly.domain.model.instruction.InstructionRuntime
+import farid.guliyev.mblockly.domain.model.instruction.type
 import farid.guliyev.mblockly.ui.components.SingleInstructionContainer
 import farid.guliyev.mblockly.ui.components.InstructionField
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AnimateFloatInstructionBlock(
-    instruction: Instruction.Animations.AnimateFloat,
+    instruction: InstructionRuntime.Animations.AnimateFloat,
     index: Int,
     isMinimized: Boolean,
-    onEditInstruction: (Instruction.Animations.AnimateFloat) -> Unit,
+    onEditInstruction: (InstructionRuntime.Animations.AnimateFloat) -> Unit,
     onRemoveInstruction: () -> Unit,
     onAddInstructionField: () -> Unit,
     onToggleMinimize: () -> Unit,
@@ -27,7 +28,7 @@ fun AnimateFloatInstructionBlock(
 ) {
     SingleInstructionContainer (
         index = index,
-        type = instruction.type,
+        type = instruction.base.type,
         isMinimized = isMinimized,
         onRemove = onRemoveInstruction,
         onMoveDown = onMoveDown,
@@ -42,19 +43,16 @@ fun AnimateFloatInstructionBlock(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             InstructionField(
-                instruction = instruction,
                 instructionField = instruction.nameField,
                 onValueChanged = onEditInstruction
             )
 
             InstructionField(
-                instruction = instruction,
                 instructionField = instruction.valueField,
                 onValueChanged = onEditInstruction
             )
 
             InstructionField(
-                instruction = instruction,
                 instructionField = instruction.durationField,
                 onValueChanged = onEditInstruction
             )

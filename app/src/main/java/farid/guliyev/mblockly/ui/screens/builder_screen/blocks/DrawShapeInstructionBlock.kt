@@ -6,21 +6,22 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import farid.guliyev.mblockly.domain.model.Instruction
-import farid.guliyev.mblockly.domain.model.type
+import farid.guliyev.mblockly.domain.model.instruction.Instruction
+import farid.guliyev.mblockly.domain.model.instruction.type
 import farid.guliyev.mblockly.ui.components.button.EnableInstructionFieldsButton
 import farid.guliyev.mblockly.ui.components.SingleInstructionContainer
 import farid.guliyev.mblockly.ui.components.InstructionField
-import farid.guliyev.mblockly.domain.model.Instruction.Visuals.DrawShape.OptionalFields.*
+import farid.guliyev.mblockly.domain.model.instruction.Instruction.Visuals.DrawShape.OptionalFields.*
+import farid.guliyev.mblockly.domain.model.instruction.InstructionRuntime
 import farid.guliyev.mblockly.ui.components.OptionalInstructionField
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DrawShapeInstructionBlock(
-    instruction: Instruction.Visuals.DrawShape,
+    instruction: InstructionRuntime.Visuals.DrawShape,
     index: Int,
     isMinimized : Boolean,
-    onEditInstruction: (Instruction.Visuals.DrawShape) -> Unit,
+    onEditInstruction: (InstructionRuntime.Visuals.DrawShape) -> Unit,
     onToggleMinimize: () -> Unit,
     onRemoveInstruction: () -> Unit,
     onAddInstructionField: () -> Unit,
@@ -31,7 +32,7 @@ fun DrawShapeInstructionBlock(
 ) {
     SingleInstructionContainer (
         index = index,
-        type = instruction.type,
+        type = instruction.base.type,
         onRemove = onRemoveInstruction,
         onMoveDown = onMoveDown,
         onMoveUp = onMoveUp,
@@ -46,66 +47,61 @@ fun DrawShapeInstructionBlock(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             InstructionField(
-                instruction = instruction,
                 instructionField = instruction.name,
                 onValueChanged = onEditInstruction
             )
 
             InstructionField(
-                instruction = instruction,
                 instructionField = instruction.width,
                 onValueChanged = onEditInstruction
             )
 
             InstructionField(
-                instruction = instruction,
                 instructionField = instruction.height,
                 onValueChanged = onEditInstruction
             )
 
             InstructionField(
-                instruction = instruction,
                 instructionField = instruction.x,
                 onValueChanged = onEditInstruction
             )
 
             InstructionField(
-                instruction = instruction,
                 instructionField = instruction.y,
                 onValueChanged = onEditInstruction
             )
 
             /** === Optional field visibility checks === */
-            OptionalInstructionField(
-                enabledOptionalFields = instruction.enabledOptionalFields,
-                optionalField = CORNER_RADIUS_FIELD,
-                name = { it.name },
-                instruction = instruction,
-                instructionField = instruction.cornerRadius,
-                onValueChanged = onEditInstruction,
-                onDisable = onEditInstruction
-            )
-            OptionalInstructionField(
-                enabledOptionalFields = instruction.enabledOptionalFields,
-                optionalField = COLOR_FIELD,
-                name = { it.name },
-                instruction = instruction,
-                instructionField = instruction.color,
-                onValueChanged = onEditInstruction,
-                onDisable = onEditInstruction
-            )
-            OptionalInstructionField(
-                enabledOptionalFields = instruction.enabledOptionalFields,
-                optionalField = SCALE_FIELD,
-                name = { it.name },
-                instruction = instruction,
-                instructionField = instruction.scaleField,
-                onValueChanged = onEditInstruction,
-                onDisable = onEditInstruction
-            )
+//            OptionalInstructionField(
+//                enabledOptionalFields = instruction.base.enabledOptionalFields,
+//                optionalField = CORNER_RADIUS_FIELD,
+//                name = { it.name },
+//                instruction = instruction.base,
+//                instructionField = instruction.cornerRadius,
+//                onValueChanged = onEditInstruction,
+//                onDisable = onEditInstruction
+//            )
+//            OptionalInstructionField(
+//                enabledOptionalFields = instruction.base.enabledOptionalFields,
+//                optionalField = COLOR_FIELD,
+//                name = { it.name },
+//                instruction = instruction.base,
+//                instructionField = instruction.color,
+//                onValueChanged = onEditInstruction,
+//                onDisable = onEditInstruction
+//            )
+//            OptionalInstructionField(
+//                enabledOptionalFields = instruction.base.enabledOptionalFields,
+//                optionalField = SCALE_FIELD,
+//                name = { it.name },
+//                instruction = instruction.base,
+//                instructionField = instruction.scaleField,
+//                onValueChanged = onEditInstruction,
+//                onDisable = onEditInstruction
+//            )
 
             /** === Optional fields add button === */
-            if (instruction.enabledOptionalFields.size < Instruction.Visuals.DrawShape.OptionalFields.entries.size) {
+            if (instruction.base.enabledOptionalFields.size < Instruction.Visuals.DrawShape.OptionalFields.entries.size) {
                 EnableInstructionFieldsButton(onClick = onAddInstructionField)
             }
         }
@@ -116,7 +112,7 @@ fun DrawShapeInstructionBlock(
 @Composable
 private fun DrawShapeBlockComponentPrev() {
     DrawShapeInstructionBlock(
-        instruction = Instruction.Visuals.DrawShape(),
+        instruction = InstructionRuntime.Visuals.DrawShape(Instruction.Visuals.DrawShape()),
         index = 0,
         onEditInstruction = {},
         onRemoveInstruction = {},

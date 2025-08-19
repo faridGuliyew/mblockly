@@ -41,7 +41,7 @@ fun AppIconButtonBackgrounded(
             .padding(12.dp),
         contentAlignment = Alignment.Center
     ) {
-        Row {
+        Row (verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 modifier = Modifier.size(24.dp),
                 imageVector = icon,

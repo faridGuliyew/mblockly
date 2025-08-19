@@ -5,9 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,20 +16,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import farid.guliyev.mblockly.domain.model.Instruction
-import farid.guliyev.mblockly.domain.model.InstructionField
+import farid.guliyev.mblockly.domain.model.instruction.InstructionField
 import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
 import farid.guliyev.mblockly.ui.theme.ErrorRed
-import farid.guliyev.mblockly.ui.theme.NeutralGray200
 import farid.guliyev.mblockly.ui.theme.NeutralGray700
 import farid.guliyev.mblockly.ui.theme.PrimaryBlue
-import farid.guliyev.mblockly.ui.theme.PrimaryBlueLight
 
 val FloatValidator: (String) -> Boolean = { it.toFloatOrNull() != null }
 val FloatConverter: (String) -> Float = { it.toFloatOrNull() ?: 0.0F }
@@ -42,7 +35,6 @@ val StringConverter: (String) -> String = { it }
 
 @Composable
 fun <T, P> InstructionField(
-    instruction: P,
     instructionField: InstructionField<T, P>,
     onValueChanged: (P) -> Unit,
     trailingContent: @Composable () -> Unit = {}
@@ -93,7 +85,7 @@ fun <T, P> InstructionField(
                 isInputValid = instructionField.validator(newInput)
 
                 if (!isInputValid) return@CustomTextField
-                onValueChanged(instructionField.onEdit(instruction, newInput))
+                onValueChanged(instructionField.onEdit(newInput))
             },
             isError = !isInputValid
         )

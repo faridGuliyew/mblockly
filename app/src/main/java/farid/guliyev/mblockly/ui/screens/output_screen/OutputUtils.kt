@@ -1,14 +1,12 @@
 package farid.guliyev.mblockly.ui.screens.output_screen
 
 import androidx.compose.runtime.MutableFloatState
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableFloatStateOf
 import farid.guliyev.mblockly.domain.UNDEFINED_VARIABLE
-import farid.guliyev.mblockly.domain.model.InstructionField
+import farid.guliyev.mblockly.domain.model.instruction.InstructionField
 
-fun InstructionField<Float, *>.extractValue(
+fun String.extractValue(
     floatVariables: Map<String, MutableFloatState>
 ) : MutableFloatState {
-    val value = this.value
-    return value.toFloatOrNull()?.run { mutableFloatStateOf(this) } ?: floatVariables[value] ?: error(UNDEFINED_VARIABLE.format(value))
+    return toFloatOrNull()?.run { mutableFloatStateOf(this) } ?: floatVariables[this] ?: error(UNDEFINED_VARIABLE.format(this))
 }

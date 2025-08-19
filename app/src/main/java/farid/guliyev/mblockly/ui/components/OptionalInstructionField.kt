@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
-import farid.guliyev.mblockly.domain.model.Instruction
-import farid.guliyev.mblockly.domain.model.InstructionField
+import farid.guliyev.mblockly.domain.model.instruction.Instruction
+import farid.guliyev.mblockly.domain.model.instruction.InstructionField
 import farid.guliyev.mblockly.ui.components.button.AppIconButton
 import farid.guliyev.mblockly.ui.theme.ErrorRed
 
@@ -23,7 +23,6 @@ fun <T, P: Instruction, O> OptionalInstructionField(
 
     Row {
         InstructionField(
-            instruction = instruction,
             instructionField = instructionField,
             onValueChanged = onValueChanged,
             trailingContent = {

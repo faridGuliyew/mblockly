@@ -6,18 +6,19 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import farid.guliyev.mblockly.domain.model.Instruction
-import farid.guliyev.mblockly.domain.model.type
+import farid.guliyev.mblockly.domain.model.instruction.Instruction
+import farid.guliyev.mblockly.domain.model.instruction.InstructionRuntime
+import farid.guliyev.mblockly.domain.model.instruction.type
 import farid.guliyev.mblockly.ui.components.SingleInstructionContainer
 import farid.guliyev.mblockly.ui.components.InstructionField
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DefineFloatInstructionBlock(
-    instruction: Instruction.Variables.DefineFloat,
+    instruction: InstructionRuntime.Variables.DefineFloat,
     index: Int,
     isMinimized : Boolean,
-    onEditInstruction: (Instruction.Variables.DefineFloat) -> Unit,
+    onEditInstruction: (InstructionRuntime.Variables.DefineFloat) -> Unit,
     onRemoveInstruction: () -> Unit,
     onAddInstructionField: () -> Unit,
     onToggleMinimize: () -> Unit,
@@ -28,7 +29,7 @@ fun DefineFloatInstructionBlock(
 ) {
     SingleInstructionContainer (
         index = index,
-        type = instruction.type,
+        type = instruction.base.type,
         onRemove = onRemoveInstruction,
         onMoveDown = onMoveDown,
         onMoveUp = onMoveUp,
@@ -43,13 +44,11 @@ fun DefineFloatInstructionBlock(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             InstructionField(
-                instruction = instruction,
                 instructionField = instruction.nameField,
                 onValueChanged = onEditInstruction
             )
 
             InstructionField(
-                instruction = instruction,
                 instructionField = instruction.valueField,
                 onValueChanged = onEditInstruction
             )
@@ -61,7 +60,7 @@ fun DefineFloatInstructionBlock(
 @Composable
 private fun DrawShapeBlockComponentPrev() {
     DrawShapeInstructionBlock(
-        instruction = Instruction.Visuals.DrawShape(),
+        instruction = InstructionRuntime.Visuals.DrawShape(Instruction.Visuals.DrawShape()),
         index = 0,
         onEditInstruction = {},
         onRemoveInstruction = {},

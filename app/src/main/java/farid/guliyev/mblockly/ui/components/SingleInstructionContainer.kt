@@ -2,7 +2,7 @@ package farid.guliyev.mblockly.ui.components
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
-import farid.guliyev.mblockly.domain.model.InstructionType
+import farid.guliyev.mblockly.domain.model.instruction.InstructionType
 
 @Composable
 fun SingleInstructionContainer(
