@@ -6,11 +6,12 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
 import farid.guliyev.mblockly.domain.model.instruction.Instruction
 import farid.guliyev.mblockly.domain.model.instruction.InstructionField
+import farid.guliyev.mblockly.domain.model.instruction.InstructionRuntime
 import farid.guliyev.mblockly.ui.components.button.AppIconButton
 import farid.guliyev.mblockly.ui.theme.ErrorRed
 
 @Composable
-fun <T, P: Instruction, O> OptionalInstructionField(
+fun <T, P: InstructionRuntime, O> OptionalInstructionField(
     enabledOptionalFields: Set<O>,
     optionalField: O,
     name: (O) -> String,
@@ -30,7 +31,7 @@ fun <T, P: Instruction, O> OptionalInstructionField(
                     icon = Icons.Default.Close,
                     color = ErrorRed,
                     onClick = {
-                        onDisable(instruction.changeOptionalFieldByName(name(optionalField), isEnabled = false) as P)
+                        onDisable(InstructionRuntime.fromBase(instruction.base.changeOptionalFieldByName(name(optionalField), isEnabled = false)) as P)
                     }
                 )
             }

@@ -23,6 +23,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -45,6 +46,7 @@ fun BuilderScreen(
     state: BuilderState,
     subState: BuilderSubState
 ) {
+    val context = LocalContext.current
     var isRunning by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -57,7 +59,7 @@ fun BuilderScreen(
                 enableFieldList = subState.enableOptionalFieldList,
                 onEnableField = viewModel::enableInstructionOptionalField,
                 onShare = viewModel::showShareSheet,
-                onBack = viewModel::goBack,
+                onBack = { viewModel.goBack(context) },
                 onExecute = { isRunning = true }
             )
         }

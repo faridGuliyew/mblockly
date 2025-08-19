@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,6 +49,8 @@ fun HomeScreen(
     state: HomeState
 ) {
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) { viewModel.loadProjects(context) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -94,16 +97,16 @@ fun HomeScreen(
                     isPrimary = true
                 )
                 
-                // Load Project Option
-                HomeOptionCard(
-                    icon = ImageVector.vectorResource(R.drawable.ic_save),
-                    title = "Load Project",
-                    description = "Open an existing project file",
-                    onClick = {
-                        viewModel.loadProjects(context = context)
-                    },
-                    isPrimary = false
-                )
+//                // Load Project Option
+//                HomeOptionCard(
+//                    icon = ImageVector.vectorResource(R.drawable.ic_save),
+//                    title = "Load Project",
+//                    description = "Open an existing project file",
+//                    onClick = {
+//                        viewModel.loadProjects(context = context)
+//                    },
+//                    isPrimary = false
+//                )
             }
             
             Spacer(modifier = Modifier.height(32.dp))

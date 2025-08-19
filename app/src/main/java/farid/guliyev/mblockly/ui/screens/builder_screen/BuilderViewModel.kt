@@ -1,6 +1,8 @@
 package farid.guliyev.mblockly.ui.screens.builder_screen
 
 import android.content.Context
+import android.content.Intent
+import androidx.core.content.FileProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.toRoute
 import farid.guliyev.mblockly.core.base.BaseViewModel
@@ -12,6 +14,7 @@ import farid.guliyev.mblockly.domain.BLOCK_CANNOT_BE_MOVED_FURTHER
 import farid.guliyev.mblockly.domain.NO_SUCH_PARENT_WITH_GROUP_ID
 import farid.guliyev.mblockly.domain.TARGET_BLOCK_IS_NOT_GROUP
 import farid.guliyev.mblockly.domain.model.ExceptionType
+import farid.guliyev.mblockly.domain.model.instruction.InstructionRuntime
 import farid.guliyev.mblockly.domain.model.instruction.InstructionType
 import farid.guliyev.mblockly.domain.model.instruction.init
 import farid.guliyev.mblockly.ui.components.sheet.SheetType
@@ -33,7 +36,7 @@ class BuilderViewModel (
         const val ROOT = "ROOT"
         const val MAIN_GROUP_NAME = "MAIN"
 
-        val initialGroup = InstructionBlock.InstructionGroup(id = MAIN_GROUP_NAME, parentId = ROOT)
+        val initialGroup get() = InstructionBlock.InstructionGroup(id = MAIN_GROUP_NAME, parentId = ROOT)
     }
 
     private val groupFromArgs = savedStateHandle.toRoute<BuilderRoute>().instructionGroup
@@ -111,13 +114,15 @@ class BuilderViewModel (
     }
 
     fun enableInstructionOptionalField(fieldName: String) {
-        TODO("NOT YET IMPL.")
-//        val instruction = subState.value.enableOptionalFieldInstructionAndIndex?.first ?: return
-//
-//        val newInstruction = instruction.copy(instruction = instruction.instruction.changeOptionalFieldByName(fieldName, isEnabled = true))
-//        val selectedInstructionIndex = subState.value.enableOptionalFieldInstructionAndIndex?.second ?: -1
-//
-//        updateInstruction(selectedInstructionIndex, newInstruction)
+        runSafelyInBg {
+            val block = subState.value.enableOptionalFieldInstructionAndIndex?.first ?: return@runSafelyInBg
+
+            val updatedBase = block.instruction.base.changeOptionalFieldByName(fieldName, isEnabled = true)
+            val newInstruction = InstructionRuntime.fromBase(updatedBase)
+            val selectedInstructionIndex = subState.value.enableOptionalFieldInstructionAndIndex?.second ?: -1
+
+            updateInstruction(selectedInstructionIndex, block.copy(instruction = newInstruction))
+        }
     }
 
     /** === BELOW FUNCTIONS ARE FOR REPETITIVE TASKS - THEY NEVER HANDLE EXCEPTIONS IMPLICITLY!  === */
@@ -195,14 +200,39 @@ class BuilderViewModel (
             }
 
             // Write project into file
-            val json = Json.encodeToString(state.value.mainInstructionGroup)
-            file.outputStream().buffered().use { it.write(json.toByteArray()) }
+            saveCurrentStateToFile(file)
 
             showSuccessAlert(message = "File named: $fileName saved successfully!")
         }
     }
 
-    fun goBack() {
-        navigationController.sendCommand { popBackStack() }
+    fun shareFile(context: Context) {
+        runSafelyInBg {
+            val file = File(context.filesDir, "shared_project.mb")
+            saveCurrentStateToFile(file)
+            val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_TEXT, "Check out this project!")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+
+            context.startActivity(Intent.createChooser(shareIntent, "Share project using"))
+        }
+    }
+
+    private fun saveCurrentStateToFile(file: File) {
+        val json = Json.encodeToString(state.value.mainInstructionGroup)
+        file.outputStream().buffered().use { it.write(json.toByteArray()) }
+    }
+
+    fun goBack(context: Context) {
+        runSafelyInBg {
+            val file = File(context.filesDir, "most_recent_project.mb")
+            saveCurrentStateToFile(file)
+            navigationController.sendCommand { popBackStack() }
+        }
     }
 }

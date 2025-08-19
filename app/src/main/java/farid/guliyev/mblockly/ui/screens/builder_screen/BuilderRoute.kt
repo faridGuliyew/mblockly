@@ -1,42 +1,28 @@
 package farid.guliyev.mblockly.ui.screens.builder_screen
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
+import android.content.Intent
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import farid.guliyev.mblockly.ui.components.sheet.AppModalBottomSheet
 import farid.guliyev.mblockly.ui.components.sheet.SheetType
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.vectorResource
-import androidx.lifecycle.viewmodel.compose.viewModel
-import farid.guliyev.mblockly.R
-import farid.guliyev.mblockly.ui.components.button.AppIconButtonBackgroundedWithText
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.ShareBottomSheetContent
-import farid.guliyev.mblockly.ui.theme.NeutralGray700
-import farid.guliyev.mblockly.ui.theme.PrimaryBlue
-import farid.guliyev.mblockly.ui.theme.SuccessGreen
+import java.io.File
 
 @Composable
 fun BuilderRoute() {
 
+    val context = LocalContext.current
     val viewModel = viewModel<BuilderViewModel>()
 
     val state by viewModel.state.collectAsStateWithLifecycle()
     val subState by viewModel.subState.collectAsStateWithLifecycle()
 
+    BackHandler { viewModel.goBack(context) }
     BuilderScreen(
         viewModel = viewModel,
         state = state,
@@ -44,7 +30,6 @@ fun BuilderRoute() {
     )
 
     val sheetState by viewModel.sheetState.collectAsStateWithLifecycle()
-    val context = LocalContext.current
     AppModalBottomSheet(
         type = sheetState,
         onDismissRequest = viewModel::hideSheet
@@ -55,6 +40,9 @@ fun BuilderRoute() {
                     onDismiss = viewModel::hideSheet,
                     onSave = {
                         viewModel.saveToFile(context, it)
+                    },
+                    onShare = {
+                        viewModel.shareFile(context)
                     }
                 )
             }

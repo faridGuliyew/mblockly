@@ -44,7 +44,8 @@ enum class ShareSheetOption (
 @Composable
 fun ShareBottomSheetContent(
     onDismiss: () -> Unit,
-    onSave: (fileName: String) -> Unit
+    onSave: (fileName: String) -> Unit,
+    onShare: () -> Unit
 ) {
     Column(
         modifier = Modifier.padding(16.dp),
@@ -67,7 +68,11 @@ fun ShareBottomSheetContent(
                     text = it.label,
                     color = it.color,
                     isHighlighted = it == selectedOption,
-                    onClick = { selectedOption = it }
+                    onClick = {
+                        if (it == ShareSheetOption.SHARE) onShare()
+
+                        selectedOption = it
+                    }
                 )
             }
         }
