@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,18 +16,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
 import farid.guliyev.mblockly.ui.theme.ErrorRed
-import farid.guliyev.mblockly.ui.theme.InfoBlue
-import farid.guliyev.mblockly.ui.theme.NeutralGray100
 import farid.guliyev.mblockly.ui.theme.NeutralGray200
 import farid.guliyev.mblockly.ui.theme.NeutralGray900
 import farid.guliyev.mblockly.ui.theme.PrimaryBlue
@@ -36,9 +31,10 @@ import farid.guliyev.mblockly.ui.theme.PrimaryBlueLight
 
 @Composable
 fun CustomTextField(
+    modifier: Modifier = Modifier,
     value: String,
     onValueChange: (String) -> Unit,
-    isError: Boolean = false
+    isError: Boolean = false,
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
@@ -61,7 +57,7 @@ fun CustomTextField(
     )
 
     BasicTextField(
-        modifier = Modifier
+        modifier = modifier
             .onFocusChanged { isFocused = it.isFocused }
             .clip(RoundedCornerShape(12.dp))
             .background(

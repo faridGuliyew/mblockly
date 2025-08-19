@@ -1,5 +1,6 @@
 package farid.guliyev.mblockly.ui.screens.builder_screen
 
+import android.content.Context
 import farid.guliyev.mblockly.core.base.BaseViewModel
 import farid.guliyev.mblockly.core.exception_handling.AppException
 import farid.guliyev.mblockly.core.exception_handling.failGracefully
@@ -13,6 +14,9 @@ import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import java.io.File
 
 class BuilderViewModel : BaseViewModel() {
 
@@ -167,4 +171,19 @@ class BuilderViewModel : BaseViewModel() {
     fun showShareSheet() { showSheet(SheetType.SHARE) }
 
     /** Below functions primarily interact with subState. MAY OR MAY NOT interact with main state */
+
+    /** Below functions do not interact with state at all */
+    fun saveToFile(context: Context, fileName: String) {
+        runSafelyInBg {
+            val file = File(context.filesDir, fileName)
+            val isFileCreated = file.createNewFile()
+            if (!isFileCreated) { failGracefully("This file already exists, pick another name", ExceptionType.WARNING) }
+
+            // Write project into file
+            val json = Json.encodeToString(state.value.mainInstructionGroup)
+            file.outputStream().buffered().use { it.write(json.toByteArray()) }
+
+            showSuccessAlert(message = "File named: $fileName saved successfully!")
+        }
+    }
 }

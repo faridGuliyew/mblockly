@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import farid.guliyev.mblockly.di.CommsModule
 import farid.guliyev.mblockly.di.sendException
 import farid.guliyev.mblockly.di.trySendException
+import farid.guliyev.mblockly.domain.model.Alert
+import farid.guliyev.mblockly.domain.model.AlertType
 import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +20,14 @@ abstract class BaseViewModel : ViewModel() {
 
     protected fun showSheet(type: SheetType) {
         sheetState.update { type }
+    }
+
+    fun showSuccessAlert(message: String) {
+        CommsModule.alertChannel.trySend(Alert(
+            title = "YEE-HAW!",
+            description = message,
+            type = AlertType.SUCCESS
+        ))
     }
 
     fun hideSheet() {

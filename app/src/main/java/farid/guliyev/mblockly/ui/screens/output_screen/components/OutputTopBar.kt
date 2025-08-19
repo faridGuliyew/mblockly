@@ -7,21 +7,16 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import farid.guliyev.mblockly.ui.theme.BackgroundSecondary
-import farid.guliyev.mblockly.ui.theme.NeutralGray100
 import farid.guliyev.mblockly.ui.theme.NeutralGray200
 import farid.guliyev.mblockly.ui.theme.NeutralGray700
 import farid.guliyev.mblockly.ui.theme.ErrorRed
@@ -54,7 +49,7 @@ fun OutputTopBar(
             AppIconButtonBackgrounded(
                 icon = Icons.Default.Close,
                 color = ErrorRed,
-                onExecute = onFinish
+                onClick = onFinish
             )
         }
 

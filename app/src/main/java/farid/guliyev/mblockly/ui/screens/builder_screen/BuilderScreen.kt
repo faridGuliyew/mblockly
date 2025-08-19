@@ -58,7 +58,8 @@ fun BuilderScreen(
                 enableFieldList = subState.enableOptionalFieldList,
                 onEnableField = viewModel::enableInstructionOptionalField,
                 onShare = viewModel::showShareSheet,
-                onExecute = { isRunning = true }
+                onExecute = { isRunning = true },
+                onBack = {}
             )
         }
     ) { innerPadding ->

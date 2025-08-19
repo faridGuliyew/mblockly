@@ -1,12 +1,15 @@
 package farid.guliyev.mblockly.ui.screens.builder_screen
 
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import farid.guliyev.mblockly.core.serialization.SnapshotStateListSerializer
 import farid.guliyev.mblockly.domain.model.Instruction
 import farid.guliyev.mblockly.domain.model.optionalFields
 import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderViewModel.Companion.MAIN_GROUP_NAME
 import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderViewModel.Companion.ROOT
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import java.util.UUID
 
 class BuilderState (
@@ -29,11 +32,13 @@ data class BuilderSubState(
     val enableOptionalFieldList = enableOptionalFieldInstructionAndIndex?.first?.instruction?.optionalFields.orEmpty()
 }
 
+@Serializable
 sealed class InstructionBlock {
     abstract val parentId: String
     abstract val isMinimized: Boolean
     abstract fun copy(parentId: String = this.parentId, isMinimized: Boolean = this.isMinimized) : InstructionBlock
 
+    @Serializable
     data class SingleInstruction(
         val instruction: Instruction,
         override val parentId: String,
@@ -44,7 +49,9 @@ sealed class InstructionBlock {
         }
     }
 
+    @Serializable
     data class InstructionGroup(
+        @Serializable(with = SnapshotStateListSerializer::class)
         val instructionBlocks: SnapshotStateList<InstructionBlock> = SnapshotStateList(),
         val id : String = UUID.randomUUID().toString(),
         override val parentId: String,

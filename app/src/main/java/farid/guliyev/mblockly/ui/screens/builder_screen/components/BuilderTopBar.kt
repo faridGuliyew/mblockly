@@ -16,8 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,8 +33,12 @@ import farid.guliyev.mblockly.ui.theme.NeutralGray200
 import farid.guliyev.mblockly.ui.theme.NeutralGray700
 import farid.guliyev.mblockly.ui.theme.SuccessGreen
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.Share
+import farid.guliyev.mblockly.ui.components.button.AppIconButton
 import farid.guliyev.mblockly.ui.components.button.AppIconButtonBackgrounded
 import farid.guliyev.mblockly.ui.theme.InfoBlue
 
@@ -53,19 +55,27 @@ fun BuilderTopBar(
     enableFieldList: List<String> = emptyList(),
     onEnableField: (String) -> Unit,
     onExecute: () -> Unit,
+    onBack: () -> Unit,
     onShare: () -> Unit,
-    onHide: () -> Unit
+    onHide: () -> Unit,
 ) {
-    Column (
+    Column(
         modifier = Modifier
             .statusBarsPadding()
             .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
             .background(color = BackgroundSecondary)
     ) {
         Row(
-            modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 12.dp),
+            modifier = Modifier.padding(start = 10.dp, end = 20.dp, top = 16.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            AppIconButton(
+                icon = Icons.Default.KeyboardArrowLeft,
+                color = NeutralGray700,
+                onClick = onShare
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+
             Text(
                 modifier = Modifier.weight(1F),
                 text = "Builder panel",
@@ -74,25 +84,25 @@ fun BuilderTopBar(
                 color = NeutralGray700
             )
 
-            Row (horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (mode != TopBarMode.HIDDEN) {
                     AppIconButtonBackgrounded(
                         icon = Icons.Default.KeyboardArrowUp,
                         color = NeutralGray700,
-                        onExecute = onHide
+                        onClick = onHide
                     )
                 }
 
                 AppIconButtonBackgrounded(
                     icon = Icons.Default.Share,
                     color = InfoBlue,
-                    onExecute = onShare
+                    onClick = onShare
                 )
 
                 AppIconButtonBackgrounded(
                     icon = Icons.Default.PlayArrow,
                     color = SuccessGreen,
-                    onExecute = onExecute
+                    onClick = onExecute
                 )
             }
         }
@@ -113,8 +123,9 @@ fun BuilderTopBar(
                         }
                     )
                 }
+
                 TopBarMode.ENABLE_FIELD -> {
-                    FlowRow (
+                    FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.padding(16.dp)
                     ) {
@@ -129,6 +140,7 @@ fun BuilderTopBar(
                         }
                     }
                 }
+
                 TopBarMode.HIDDEN -> Unit
             }
         }
@@ -143,7 +155,7 @@ fun AddBlockPanel(blocks: List<InstructionType>, onClick: (InstructionType) -> U
             .padding(16.dp)
     ) {
         blocks.forEach { type ->
-            Row (
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp))
@@ -172,11 +184,13 @@ fun AddBlockPanel(blocks: List<InstructionType>, onClick: (InstructionType) -> U
 @Preview(showBackground = true)
 @Composable
 private fun TopBarPrev() {
-    BuilderTopBar(onAddInstruction = {}, onExecute = {}, onHide = {},
+    BuilderTopBar(
+        onAddInstruction = {}, onExecute = {}, onHide = {},
         mode = TopBarMode.ADD_INSTRUCTION,
         supportedInstructions = listOf(),
         enableFieldList = listOf(),
         onEnableField = {},
-        onShare = {}
-        )
+        onShare = {},
+        onBack = {}
+    )
 }
