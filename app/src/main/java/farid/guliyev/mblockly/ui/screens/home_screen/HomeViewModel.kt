@@ -28,9 +28,9 @@ class HomeViewModel (
         runSafelyInBg {
             val filesDir = context.filesDir
             val formatter = DateFormat.getInstance()
-            val mbFiles = filesDir.listFiles { file -> file.extension.lowercase() == "mb" }?.map { SavedFile(
-                name = it.name, lastModified = formatter.format(Date(it.lastModified()))
-            ) }?.reversed().orEmpty()
+            val mbFiles = filesDir.listFiles { file -> file.extension.lowercase() == "mb" }.orEmpty()
+                .sortedByDescending { it.lastModified() }
+                .map { SavedFile(name = it.name, lastModified = formatter.format(Date(it.lastModified()))) }
 
             state.update { it.copy(projectFiles = mbFiles) }
         }

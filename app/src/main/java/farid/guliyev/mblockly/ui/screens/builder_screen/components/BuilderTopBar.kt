@@ -31,10 +31,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import farid.guliyev.mblockly.domain.model.instruction.InstructionType
+import farid.guliyev.mblockly.domain.model.instruction.SingleInstructionType
 import farid.guliyev.mblockly.ui.components.button.AppIconButton
 import farid.guliyev.mblockly.ui.components.button.AppIconButtonBackgrounded
 import farid.guliyev.mblockly.ui.components.button.EnableInstructionFieldButton
+import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupMetaData
+import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupType
+import farid.guliyev.mblockly.ui.screens.builder_screen.init
 import farid.guliyev.mblockly.ui.theme.InfoBlue
 import farid.guliyev.mblockly.ui.theme.NeutralGray100
 import farid.guliyev.mblockly.ui.theme.NeutralGray200
@@ -42,15 +45,19 @@ import farid.guliyev.mblockly.ui.theme.NeutralGray700
 import farid.guliyev.mblockly.ui.theme.SuccessGreen
 
 enum class TopBarMode {
-    ADD_INSTRUCTION, ENABLE_FIELD, HIDDEN
+    ADD_INSTRUCTION,
+    ADD_GROUP,
+    ENABLE_FIELD,
+    HIDDEN
 }
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BuilderTopBar(
     mode: TopBarMode = TopBarMode.ADD_INSTRUCTION,
-    supportedInstructions: List<InstructionType> = InstructionType.entries,
-    onAddInstruction: (InstructionType) -> Unit,
+    supportedInstructions: List<SingleInstructionType> = SingleInstructionType.entries,
+    onAddSingleInstruction: (SingleInstructionType) -> Unit,
+    onAddInstructionGroup: (InstructionGroupMetaData) -> Unit,
     enableFieldList: List<String> = emptyList(),
     onEnableField: (String) -> Unit,
     onExecute: () -> Unit,
@@ -117,7 +124,15 @@ fun BuilderTopBar(
                         blocks = supportedInstructions,
                         onClick = {
                             onHide()
-                            onAddInstruction(it)
+                            onAddSingleInstruction(it)
+                        }
+                    )
+                }
+                TopBarMode.ADD_GROUP -> {
+                    AddGroupPanel(
+                        onClick = {
+                            onHide()
+                            onAddInstructionGroup(it)
                         }
                     )
                 }
@@ -144,7 +159,7 @@ fun BuilderTopBar(
 }
 
 @Composable
-fun AddBlockPanel(blocks: List<InstructionType>, onClick: (InstructionType) -> Unit) {
+fun AddBlockPanel(blocks: List<SingleInstructionType>, onClick: (SingleInstructionType) -> Unit) {
     Column(
         modifier = Modifier
             .verticalScroll(rememberScrollState())
@@ -177,12 +192,46 @@ fun AddBlockPanel(blocks: List<InstructionType>, onClick: (InstructionType) -> U
     }
 }
 
+@Composable
+fun AddGroupPanel(blocks: List<InstructionGroupType> = InstructionGroupType.entries, onClick: (InstructionGroupMetaData) -> Unit) {
+    Column(
+        modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+    ) {
+        blocks.forEach { type ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable(onClick = {
+                        onClick(type.init())
+                    })
+                    .background(NeutralGray100)
+                    .padding(8.dp)
+            ) {
+                Text(
+                    text = type.description,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = NeutralGray700
+                )
+            }
+            HorizontalDivider(
+                thickness = 1.dp,
+                color = NeutralGray200.copy(alpha = 0.3f),
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun TopBarPrev() {
-    BuilderTopBar(onAddInstruction = {}, onExecute = {}, onHide = {},
+    BuilderTopBar(onAddSingleInstruction = {}, onExecute = {}, onHide = {},
         mode = TopBarMode.ADD_INSTRUCTION,
         supportedInstructions = listOf(),
         enableFieldList = listOf(),
-        onEnableField = {}, onBack = {}, onShare = {})
+        onEnableField = {}, onBack = {}, onShare = {}, onAddInstructionGroup = {})
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -57,7 +58,7 @@ fun InstructionContainer(
     borderColor: Color = PrimaryBlue,
     backgroundColor: Color = BackgroundSecondary,
     innerPadding: PaddingValues = PaddingValues(16.dp),
-    content: @Composable () -> Unit
+    content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
         modifier = modifier
@@ -125,7 +126,6 @@ fun InstructionContainer(
 
         if (isMinimized) return@Column
 
-        Spacer(modifier = Modifier.height(12.dp))
         content()
     }
 }

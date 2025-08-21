@@ -4,16 +4,21 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableFloatState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
@@ -21,20 +26,27 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import farid.guliyev.mblockly.domain.UNDEFINED_VARIABLE
 import farid.guliyev.mblockly.domain.model.instruction.Instruction
 import farid.guliyev.mblockly.ui.model.UiShape
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionBlock
+import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupMetaData
+import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupType
 import farid.guliyev.mblockly.ui.screens.output_screen.components.OutputTopBar
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun OutputScreen(
+fun ColumnScope.OutputScreen(
     mainInstructionGroup: InstructionBlock.InstructionGroup,
-    onFinish: () -> Unit
+    onFinish: () -> Unit,
+    currentDrag: Float = 0.5F,
+    onDrag: (amount: Float) -> Unit
 ) {
     val shapes = remember { mutableStateMapOf<String, UiShape>() }
     val floatVariableStates = remember { mutableStateMapOf<String, MutableFloatState>() }
@@ -43,9 +55,20 @@ fun OutputScreen(
     }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .weight(currentDrag)
+            .fillMaxSize(),
         topBar = {
+            val currentDrag by rememberUpdatedState(currentDrag)
+            val screenHeight = LocalConfiguration.current.screenHeightDp.dp
             OutputTopBar(
+                modifier = Modifier.pointerInput(Unit) {
+                    detectDragGestures { _, dragAmount ->
+                        val newDrag = (currentDrag - dragAmount.y / (screenHeight.toPx())).coerceIn(0.1F, 0.99F)
+                        println("newDrag: $newDrag")
+                        onDrag(newDrag)
+                    }
+                },
                 onFinish = onFinish
             )
         }
@@ -93,19 +116,53 @@ suspend fun handleInstructionGroup(
                 }
 
                 is InstructionBlock.InstructionGroup -> {
-                    launch {
-                        handleInstructionGroup(
-                            group = block,
-                            shapes = shapes,
-                            floatVariableStates = floatVariableStates
-                        )
-                        println("--------------------------------------")
-                        println("OUTPUT OF INSTRUCTION GROUP: ${block.id}")
-                        println("OUTPUT: Shapes: ${shapes.map { it.value }}")
-                        println("OUTPUT: Floats: ${floatVariableStates.keys}")
-                        println("--------------------------------------")
+                    when (val metadata = block.metaData) {
+                        InstructionGroupMetaData.Thread -> {
+                            launch {
+                                handleInstructionGroup(
+                                    group = block,
+                                    shapes = shapes,
+                                    floatVariableStates = floatVariableStates
+                                )
+
+                                println("--------------------------------------")
+                                println("OUTPUT OF INSTRUCTION GROUP: ${block.id}")
+                                println("OUTPUT: Shapes: ${shapes.map { it.value }}")
+                                println("OUTPUT: Floats: ${floatVariableStates.keys}")
+                                println("--------------------------------------")
+                            }
+                        }
+                        is InstructionGroupMetaData.FiniteLoop -> {
+                            repeat(metadata.loopCount.toInt()) {
+                                handleInstructionGroup(
+                                    group = block,
+                                    shapes = shapes,
+                                    floatVariableStates = floatVariableStates
+                                )
+
+                                println("--------------------------------------")
+                                println("OUTPUT OF INSTRUCTION GROUP: ${block.id}")
+                                println("OUTPUT: Shapes: ${shapes.map { it.value }}")
+                                println("OUTPUT: Floats: ${floatVariableStates.keys}")
+                                println("--------------------------------------")
+                            }
+                        }
+                        InstructionGroupMetaData.InfiniteLoop -> {
+                            while (true) {
+                                handleInstructionGroup(
+                                    group = block,
+                                    shapes = shapes,
+                                    floatVariableStates = floatVariableStates
+                                )
+
+                                println("--------------------------------------")
+                                println("OUTPUT OF INSTRUCTION GROUP: ${block.id}")
+                                println("OUTPUT: Shapes: ${shapes.map { it.value }}")
+                                println("OUTPUT: Floats: ${floatVariableStates.keys}")
+                                println("--------------------------------------")
+                            }
+                        }
                     }
-                    return@forEach
                 }
             }
         }
@@ -142,6 +199,25 @@ suspend fun handleSingleInstruction(
             }
         }
 
+        is Instruction.Variables.ChangeFloat -> {
+            val floatName = instruction.nameField.value
+            val floatVariable = floatVariableStates[floatName] ?: error(UNDEFINED_VARIABLE.format(floatName))
+
+            val duration = instruction.durationField.value.toInt()
+            val newValue = floatVariable.floatValue + instruction.deltaField.value.toFloat()
+            if (duration == 0) {
+                floatVariableStates[floatName]!!.floatValue += newValue
+            } else {
+                animate(
+                    initialValue = floatVariable.floatValue,
+                    targetValue = newValue,
+                    animationSpec = tween(durationMillis = duration, easing = LinearEasing)
+                ) { value, _ ->
+                    floatVariable.floatValue = value
+                }
+            }
+        }
+
         is Instruction.Animations.AnimateFloat -> {
             val floatName = instruction.nameField.value
             val floatVariable = floatVariableStates[floatName] ?: error(UNDEFINED_VARIABLE.format(floatName))
@@ -157,14 +233,17 @@ suspend fun handleSingleInstruction(
         is Instruction.Controls.Wait -> {
             delay(instruction.durationField.value.toLong())
         }
+
     }
 }
 
 @Preview
 @Composable
 private fun OutputScreenPrev() {
-    OutputScreen(
-        mainInstructionGroup = InstructionBlock.InstructionGroup(parentId = ""),
-        onFinish = {}
-    )
+    Column {
+        OutputScreen(
+            mainInstructionGroup = InstructionBlock.InstructionGroup(parentId = "", metaData = InstructionGroupMetaData.Thread),
+            onFinish = {}, onDrag = {}
+        )
+    }
 }

@@ -86,6 +86,27 @@ fun CustomTextField(
 }
 
 
+@Composable
+fun CustomTextFieldWithValidator(
+    originalValue: String,
+    onValueChange: (String) -> Unit,
+    validator: (String) -> Boolean
+) {
+    var isValid by remember { mutableStateOf(true) }
+    var value by remember(originalValue) { mutableStateOf(originalValue) }
+    CustomTextField(
+        value = value,
+        onValueChange = { newInput ->
+            value = newInput
+            isValid = validator(newInput)
+            if (!isValid) return@CustomTextField
+
+            onValueChange(newInput)
+        },
+        isError = !isValid
+    )
+}
+
 
 @Preview
 @Composable

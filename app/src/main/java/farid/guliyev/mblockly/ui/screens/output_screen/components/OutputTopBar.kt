@@ -21,19 +21,33 @@ import farid.guliyev.mblockly.ui.theme.NeutralGray200
 import farid.guliyev.mblockly.ui.theme.NeutralGray700
 import farid.guliyev.mblockly.ui.theme.ErrorRed
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import farid.guliyev.mblockly.ui.components.button.AppIconButtonBackgrounded
+import farid.guliyev.mblockly.ui.theme.AccentEmeraldDark
+import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
+import farid.guliyev.mblockly.ui.theme.NeutralGray400
+import farid.guliyev.mblockly.ui.theme.NeutralGray900
 
 @Composable
 fun OutputTopBar(
+    modifier: Modifier = Modifier,
     onFinish: () -> Unit
 ) {
+    val shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
     Column (
-        modifier = Modifier
-            .statusBarsPadding()
-            .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+        modifier = modifier
+            .clip(shape)
             .background(color = BackgroundSecondary)
+            .border(width = 1.dp, color = NeutralGray400, shape = shape)
     ) {
+        Box (contentAlignment = Alignment.Center) {
+            HorizontalDivider(thickness = 10.dp, color = NeutralGray900)
+            Box(modifier = Modifier.width(50.dp).height(2.dp).background(color = BackgroundPrimary))
+        }
         Row(
             modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp, bottom = 12.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -52,11 +66,6 @@ fun OutputTopBar(
                 onClick = onFinish
             )
         }
-
-        HorizontalDivider(
-            thickness = 2.dp,
-            color = NeutralGray200.copy(alpha = 0.5f)
-        )
     }
 }
 

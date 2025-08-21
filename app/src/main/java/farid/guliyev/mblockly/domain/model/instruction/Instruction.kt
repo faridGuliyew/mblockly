@@ -4,9 +4,9 @@ import farid.guliyev.mblockly.domain.model.instruction.Instruction.Controls.Wait
 import farid.guliyev.mblockly.domain.model.instruction.Instruction.Variables.DefineFloat
 import farid.guliyev.mblockly.ui.components.ColorValidator
 import farid.guliyev.mblockly.ui.components.FloatValidator
-import farid.guliyev.mblockly.ui.components.InstructionField
 import farid.guliyev.mblockly.ui.components.IntValidator
 import farid.guliyev.mblockly.ui.components.StringValidator
+import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionBlock
 import kotlinx.serialization.Serializable
 
 /** MAKE SURE For each Instruction, there is associated Instruction. Be careful here overall, do not mess it up :D */
@@ -37,6 +37,26 @@ sealed interface InstructionRuntime {
                 data = base.valueField,
                 validator = FloatValidator,
                 onEdit = { value -> DefineFloat(base.updateField(value = value)) }
+            )
+        }
+
+        class ChangeFloat(
+            override val base: Instruction.Variables.ChangeFloat = Instruction.Variables.ChangeFloat()
+        ) : Variables {
+            val nameField = InstructionField<String, ChangeFloat>(
+                data = base.nameField,
+                validator = StringValidator,
+                onEdit = { v -> ChangeFloat(base.updateField(name = v)) }
+            )
+            val deltaField = InstructionField<String, ChangeFloat>(
+                data = base.deltaField,
+                validator = FloatValidator,
+                onEdit = { v -> ChangeFloat(base.updateField(delta = v)) }
+            )
+            val durationField = InstructionField<String, ChangeFloat>(
+                data = base.durationField,
+                validator = IntValidator,
+                onEdit = { v -> ChangeFloat(base.updateField(duration = v)) }
             )
         }
     }
@@ -116,17 +136,27 @@ sealed interface Instruction {
     fun buildRuntime() : InstructionRuntime
 
     fun changeOptionalFieldByName(name: String, isEnabled: Boolean) : Instruction {
-        if (this is Visuals.DrawShape) {
-            val field = Visuals.DrawShape.OptionalFields.valueOf(name)
-            var updatedInstruction = this.updateField(
-                enabledOptionalFields = if (isEnabled) enabledOptionalFields + field else enabledOptionalFields - field
-            )
+        when (this) {
+            is Visuals.DrawShape -> {
+                val field = Visuals.DrawShape.OptionalFields.valueOf(name)
+                var updatedInstruction = this.updateField(
+                    enabledOptionalFields = if (isEnabled) enabledOptionalFields + field else enabledOptionalFields - field
+                )
 
-            if (!isEnabled) { updatedInstruction = updatedInstruction.resetOptionalField(field ) }
-            return updatedInstruction
+                if (!isEnabled) { updatedInstruction = updatedInstruction.resetOptionalField(field ) }
+                return updatedInstruction
+            }
+            is Variables.ChangeFloat -> {
+                val field = Variables.ChangeFloat.OptionalFields.valueOf(name)
+                var updatedInstruction = this.updateField(
+                    enabledOptionalFields = if (isEnabled) enabledOptionalFields + field else enabledOptionalFields - field
+                )
+
+                if (!isEnabled) { updatedInstruction = updatedInstruction.resetOptionalField(field ) }
+                return updatedInstruction
+            }
+            else -> error("Unsupported operation: enableOptionalFieldByName($name)")
         }
-
-        else error("Unsupported operation: enableOptionalFieldByName($name)")
     }
 
     @Serializable
@@ -173,6 +203,39 @@ sealed interface Instruction {
 
             override fun buildRuntime(): InstructionRuntime {
                 return InstructionRuntime.Variables.DefineFloat(this)
+            }
+        }
+
+        @Serializable
+        data class ChangeFloat(
+            val nameField: InstructionFieldData = InstructionFieldData("Name", "float"),
+            val deltaField: InstructionFieldData = InstructionFieldData("Change By", "1.0"),
+            val durationField: InstructionFieldData = InstructionFieldData("Duration (ms)", "0"),
+            val enabledOptionalFields: Set<OptionalFields> = emptySet()
+        ) : Variables {
+            enum class OptionalFields {
+                DURATION_FIELD
+            }
+
+            fun updateField(
+                name: String = this.nameField.value,
+                delta: String = this.deltaField.value,
+                duration: String = this.durationField.value,
+                enabledOptionalFields: Set<OptionalFields> = this.enabledOptionalFields
+            ) = ChangeFloat(
+                nameField = this.nameField.copy(value = name),
+                deltaField = this.deltaField.copy(value = delta),
+                durationField = this.durationField.copy(value = duration),
+                enabledOptionalFields = enabledOptionalFields
+            )
+
+            fun resetOptionalField(field: OptionalFields): ChangeFloat =
+                when (field) {
+                    OptionalFields.DURATION_FIELD -> updateField(duration = "0")
+                }
+
+            override fun buildRuntime(): InstructionRuntime {
+                return InstructionRuntime.Variables.ChangeFloat(this)
             }
         }
     }
@@ -261,27 +324,28 @@ val Instruction.type
     get() = when (this) {
         is Instruction.Variables -> {
             when (this) {
-                is Instruction.Variables.DefineString -> InstructionType.SET_STRING
-                is Instruction.Variables.DefineInteger -> InstructionType.SET_INTEGER
-                is DefineFloat -> InstructionType.SET_FLOAT
+                is Instruction.Variables.DefineString -> SingleInstructionType.SET_STRING
+                is Instruction.Variables.DefineInteger -> SingleInstructionType.SET_INTEGER
+                is DefineFloat -> SingleInstructionType.SET_FLOAT
+                is Instruction.Variables.ChangeFloat -> SingleInstructionType.CHANGE_FLOAT
             }
         }
 
         is Instruction.Visuals -> {
             when (this) {
-                is Instruction.Visuals.DrawShape -> InstructionType.DRAW_SHAPE
+                is Instruction.Visuals.DrawShape -> SingleInstructionType.DRAW_SHAPE
             }
         }
 
         is Instruction.Animations -> {
             when(this) {
-                is Instruction.Animations.AnimateFloat -> InstructionType.ANIMATE_FLOAT
+                is Instruction.Animations.AnimateFloat -> SingleInstructionType.ANIMATE_FLOAT
             }
         }
 
         is Instruction.Controls -> {
             when(this) {
-                is Wait -> InstructionType.WAIT
+                is Wait -> SingleInstructionType.WAIT
             }
         }
     }
@@ -293,26 +357,32 @@ val Instruction.optionalFields: List<String>
                 is Instruction.Visuals.DrawShape -> Instruction.Visuals.DrawShape.OptionalFields.entries.map { it.name }
             }
         }
+        is Instruction.Variables -> when (this) {
+            is Instruction.Variables.ChangeFloat -> Instruction.Variables.ChangeFloat.OptionalFields.entries.map { it.name }
+            else -> emptyList()
+        }
         else -> emptyList()
     }
 
 
-enum class InstructionType(val description: String, val label: String = "") {
+enum class SingleInstructionType(val description: String, val label: String = "") {
     SET_STRING(description = "💾 Set/create a variable of STRING type", label = "Set string"),
     SET_INTEGER(description = "💾 Set/create a new variable of INTEGER type", label = "Set integer"),
     SET_FLOAT(description = "💾 Set/create a new variable of FLOAT type", label = "Set float"),
+    CHANGE_FLOAT("➕ Change FLOAT by value", "Change float"),
     ANIMATE_FLOAT(description = "🤸‍♀️ Animate FLOAT", label = "Animate float"),
     DRAW_SHAPE(description = "📐 Draw a shape", label = "Draw shape"),
     WAIT(description = "😴 Wait", label = "Wait")
 }
 
-fun InstructionType.init(): InstructionRuntime {
+fun SingleInstructionType.init(): InstructionRuntime {
     return when (this) {
-        InstructionType.SET_STRING -> error("$this")
-        InstructionType.SET_INTEGER -> error("$this")
-        InstructionType.SET_FLOAT -> InstructionRuntime.Variables.DefineFloat()
-        InstructionType.DRAW_SHAPE -> InstructionRuntime.Visuals.DrawShape()
-        InstructionType.ANIMATE_FLOAT -> InstructionRuntime.Animations.AnimateFloat()
-        InstructionType.WAIT -> InstructionRuntime.Controls.Wait()
+        SingleInstructionType.SET_STRING -> error("$this")
+        SingleInstructionType.SET_INTEGER -> error("$this")
+        SingleInstructionType.SET_FLOAT -> InstructionRuntime.Variables.DefineFloat()
+        SingleInstructionType.CHANGE_FLOAT -> InstructionRuntime.Variables.ChangeFloat()
+        SingleInstructionType.DRAW_SHAPE -> InstructionRuntime.Visuals.DrawShape()
+        SingleInstructionType.ANIMATE_FLOAT -> InstructionRuntime.Animations.AnimateFloat()
+        SingleInstructionType.WAIT -> InstructionRuntime.Controls.Wait()
     }
 }

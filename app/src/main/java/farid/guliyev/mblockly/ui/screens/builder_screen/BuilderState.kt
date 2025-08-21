@@ -3,12 +3,12 @@ package farid.guliyev.mblockly.ui.screens.builder_screen
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import farid.guliyev.mblockly.core.serialization.InstructionRuntimeSerializer
 import farid.guliyev.mblockly.core.serialization.SnapshotStateListSerializer
-import farid.guliyev.mblockly.domain.model.instruction.Instruction
 import farid.guliyev.mblockly.domain.model.instruction.InstructionRuntime
 import farid.guliyev.mblockly.domain.model.instruction.optionalFields
 import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderViewModel.Companion.initialGroup
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.UUID
 
@@ -26,6 +26,7 @@ data class BuilderSubState(
     val topBarMode: TopBarMode = TopBarMode.HIDDEN,
     val sheetType: SheetType = SheetType.HIDDEN,
     val addSingleInstructionParentId: String? = null,
+    val addInstructionGroupParentId: String? = null,
     val enableOptionalFieldInstructionAndIndex : Pair<InstructionBlock.SingleInstruction, Int>? = null,
     val focusedEditInstructionGroupsWithIndices : List<Pair<InstructionBlock.InstructionGroup, Int>> = emptyList()
 ) {
@@ -53,6 +54,7 @@ sealed class InstructionBlock {
                     instructionBlocks = SnapshotStateList<InstructionBlock>().also { list ->
                         this.instructionBlocks.forEach { block -> list.add(block.hardCopy()) } // recursively deep copy
                     },
+                    metaData = metaData,
                     parentId = parentId,
                     isMinimized = isMinimized
                 )
@@ -77,11 +79,47 @@ sealed class InstructionBlock {
         @Serializable(with = SnapshotStateListSerializer::class)
         val instructionBlocks: SnapshotStateList<InstructionBlock> = SnapshotStateList(),
         val id : String = UUID.randomUUID().toString(),
+        val metaData: InstructionGroupMetaData,
         override val parentId: String,
         override val isMinimized: Boolean = false
     ) : InstructionBlock() {
         override fun copy(parentId: String, isMinimized: Boolean) : InstructionGroup {
             return this.copy(id = id, parentId = parentId, isMinimized = isMinimized)
         }
+    }
+}
+
+@Serializable
+sealed interface InstructionGroupMetaData {
+    @SerialName("meta_data_type")
+    val groupType: InstructionGroupType
+
+    @Serializable
+    data object Thread: InstructionGroupMetaData {
+        override val groupType: InstructionGroupType = InstructionGroupType.THREAD
+    }
+
+    @Serializable
+    data object InfiniteLoop: InstructionGroupMetaData {
+        override val groupType: InstructionGroupType = InstructionGroupType.INFINITE_LOOP
+    }
+
+    @Serializable
+    data class FiniteLoop (val loopCount: String): InstructionGroupMetaData {
+        override val groupType: InstructionGroupType = InstructionGroupType.FINITE_LOOP
+    }
+}
+
+enum class InstructionGroupType (val description: String, val label: String) {
+    THREAD(description = "💾 Add a new thread for parallel execution", label = "Thread"),
+    INFINITE_LOOP(description = "😴 Add an infinite loop", label = "Infinite loop"),
+    FINITE_LOOP(description = "😴 Add a finite loop", label = "Finite loop")
+}
+
+fun InstructionGroupType.init() : InstructionGroupMetaData {
+    return when(this) {
+        InstructionGroupType.THREAD -> InstructionGroupMetaData.Thread
+        InstructionGroupType.INFINITE_LOOP -> InstructionGroupMetaData.InfiniteLoop
+        InstructionGroupType.FINITE_LOOP -> InstructionGroupMetaData.FiniteLoop("1")
     }
 }

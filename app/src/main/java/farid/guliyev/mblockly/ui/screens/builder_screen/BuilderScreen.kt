@@ -18,8 +18,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -27,7 +29,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import farid.guliyev.mblockly.domain.model.instruction.Instruction
 import farid.guliyev.mblockly.domain.model.instruction.InstructionRuntime
 import farid.guliyev.mblockly.ui.components.button.AddInstructionButton
 import farid.guliyev.mblockly.ui.components.InstructionContainer
@@ -36,9 +37,13 @@ import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DefineFloatInstru
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawShapeInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.WaitInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.BuilderTopBar
+import farid.guliyev.mblockly.ui.screens.builder_screen.containers.InstructionGroupDrawer
+import farid.guliyev.mblockly.ui.screens.builder_screen.containers.SingleInstructionDrawer
 import farid.guliyev.mblockly.ui.screens.output_screen.OutputScreen
 import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
 import farid.guliyev.mblockly.ui.theme.AccentEmerald
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun BuilderScreen(
@@ -47,7 +52,9 @@ fun BuilderScreen(
     subState: BuilderSubState
 ) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     var isRunning by remember { mutableStateOf(false) }
+    var splitScreenWeight by remember { mutableFloatStateOf(0.5F) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -55,80 +62,92 @@ fun BuilderScreen(
             BuilderTopBar(
                 mode = subState.topBarMode,
                 onHide = viewModel::hideTopBarMenu,
-                onAddInstruction = viewModel::addSingleInstruction,
+                onAddSingleInstruction = viewModel::addSingleInstruction,
+                onAddInstructionGroup = viewModel::addInstructionGroup,
                 enableFieldList = subState.enableOptionalFieldList,
                 onEnableField = viewModel::enableInstructionOptionalField,
                 onShare = viewModel::showShareSheet,
                 onBack = { viewModel.goBack(context) },
-                onExecute = { isRunning = true }
+                onExecute = {
+                    scope.launch {
+                        isRunning = false
+                        delay(50)
+                        isRunning = true
+                    }
+                }
             )
         }
     ) { innerPadding ->
-        Box(
+        Column (
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(12.dp)
         ) {
-            InstructionBlockDrawer(
-                block = state.mainInstructionGroup,
-                index = -1,
-                onUpdateInstruction = viewModel::updateInstruction,
-                onRemoveInstruction = viewModel::removeInstructionBlock,
-                onMoveUp = viewModel::moveInstructionUp,
-                onMoveDown = viewModel::moveInstructionDown,
-                onMoveIn = viewModel::moveInstructionIn,
-                onMoveOut = viewModel::moveInstructionOut,
-                onAddInstructionGroup = viewModel::addInstructionGroup,
-                onDuplicate = viewModel::duplicateInstruction,
+            Box(modifier = Modifier.weight(1F - splitScreenWeight)
+                .padding(12.dp)) {
+                InstructionBlockDrawer(
+                    block = state.mainInstructionGroup,
+                    index = -1,
+                    onUpdateInstruction = viewModel::updateInstruction,
+                    onRemoveInstruction = viewModel::removeInstructionBlock,
+                    onMoveUp = viewModel::moveInstructionUp,
+                    onMoveDown = viewModel::moveInstructionDown,
+                    onMoveIn = viewModel::moveInstructionIn,
+                    onMoveOut = viewModel::moveInstructionOut,
+                    onAddInstructionGroup = viewModel::showAddInstructionGroupOptions,
+                    onDuplicate = viewModel::duplicateInstruction,
 
-                onEnableFocusModeForGroup = viewModel::enableFocusEditingForGroup,
-                onEnableSingleInstructionOptionalField = viewModel::showEnableSingleInstructionOptionalField,
-                onAddSingleInstruction = viewModel::showAddSingleInstructionOptions
-            )
+                    onEnableFocusModeForGroup = viewModel::enableFocusEditingForGroup,
+                    onEnableSingleInstructionOptionalField = viewModel::showEnableSingleInstructionOptionalField,
+                    onAddSingleInstruction = viewModel::showAddSingleInstructionOptions
+                )
 
-            subState.focusedEditInstructionGroupsWithIndices.forEach { groupWithIndex ->
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(color = BackgroundPrimary)
-                        .verticalScroll(rememberScrollState())) {
-                    InstructionBlockDrawer(
-                        block = groupWithIndex.first.copy(isMinimized = false),
-                        index = groupWithIndex.second,
-                        onUpdateInstruction = viewModel::updateInstruction,
-                        onRemoveInstruction = viewModel::removeInstructionBlock,
-                        onMoveUp = viewModel::moveInstructionUp,
-                        onMoveDown = viewModel::moveInstructionDown,
-                        onMoveIn = viewModel::moveInstructionIn,
-                        onMoveOut = viewModel::moveInstructionOut,
-                        onAddInstructionGroup = viewModel::addInstructionGroup,
-                        onEnableSingleInstructionOptionalField = viewModel::showEnableSingleInstructionOptionalField,
-                        onAddSingleInstruction = viewModel::showAddSingleInstructionOptions,
-                        onDuplicate = viewModel::duplicateInstruction,
-                        onEnableFocusModeForGroup = { index, group ->
-                            if (group.id == groupWithIndex.first.id) return@InstructionBlockDrawer
+                subState.focusedEditInstructionGroupsWithIndices.forEach { groupWithIndex ->
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(color = BackgroundPrimary)
+                            .verticalScroll(rememberScrollState())) {
+                        InstructionBlockDrawer(
+                            block = groupWithIndex.first.copy(isMinimized = false),
+                            index = groupWithIndex.second,
+                            onUpdateInstruction = viewModel::updateInstruction,
+                            onRemoveInstruction = viewModel::removeInstructionBlock,
+                            onMoveUp = viewModel::moveInstructionUp,
+                            onMoveDown = viewModel::moveInstructionDown,
+                            onMoveIn = viewModel::moveInstructionIn,
+                            onMoveOut = viewModel::moveInstructionOut,
+                            onAddInstructionGroup = viewModel::showAddInstructionGroupOptions,
+                            onEnableSingleInstructionOptionalField = viewModel::showEnableSingleInstructionOptionalField,
+                            onAddSingleInstruction = viewModel::showAddSingleInstructionOptions,
+                            onDuplicate = viewModel::duplicateInstruction,
+                            onEnableFocusModeForGroup = { index, group ->
+                                if (group.id == groupWithIndex.first.id) return@InstructionBlockDrawer
 
-                            viewModel.enableFocusEditingForGroup(index, group)
-                        }
-                    )
+                                viewModel.enableFocusEditingForGroup(index, group)
+                            }
+                        )
 
-                    Spacer(modifier = Modifier.heightIn(8.dp))
-                    AddInstructionButton(
-                        text = "Close `Focused editing`",
-                        backgroundColor = AccentEmerald,
-                        onClick = viewModel::exitFocusEditingForGroup
-                    )
+                        Spacer(modifier = Modifier.heightIn(8.dp))
+                        AddInstructionButton(
+                            text = "Close `Focused editing`",
+                            backgroundColor = AccentEmerald,
+                            onClick = viewModel::exitFocusEditingForGroup
+                        )
+                    }
                 }
             }
+
+            if (isRunning) {
+                val instructions = remember { state.mainInstructionGroup }
+                OutputScreen(
+                    mainInstructionGroup = instructions,
+                    currentDrag = splitScreenWeight,
+                    onDrag = { splitScreenWeight = it },
+                    onFinish = {
+                    isRunning = false
+                })
+            }
         }
-    }
-
-
-    if (isRunning) {
-        val instructions = remember { state.mainInstructionGroup }
-        OutputScreen(mainInstructionGroup = instructions, onFinish = {
-            isRunning = false
-        })
     }
 }
 
@@ -169,156 +188,24 @@ fun InstructionBlockDrawer(
         }
 
         is InstructionBlock.InstructionGroup -> {
-            InstructionContainer(
+            InstructionGroupDrawer(
                 modifier = modifier,
-                label = "Thread: ${block.id.take(10)}",
                 index = index,
-                isMinimized = block.isMinimized,
-                onRemove = { onRemoveInstruction(index, block) },
-                onMoveUp = { onMoveUp(index, block) },
-                onMoveDown = { onMoveDown(index, block) },
-                onMoveOut = { onMoveOut(index, block) },
-                onMoveIn =  { onMoveIn(index, block) },
-                onToggleMinimize = { onUpdateInstruction(index, block.copy(isMinimized = !block.isMinimized)) },
-                onEditSeparately = { onEnableFocusModeForGroup(index, block) },
-                onDuplicate = { onDuplicate(index, block) },
-                backgroundColor = AccentEmerald.copy(alpha = 0.1f),
-                borderColor = AccentEmerald,
-                innerPadding = PaddingValues(8.dp),
-                content = {
-                    LazyColumn (
-                        modifier = Modifier.heightIn(max = screenHeight * 0.8F),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        itemsIndexed(items = block.instructionBlocks) { childIndex, childBlock ->
-                            // Recursively render each child
-                            InstructionBlockDrawer(
-                                block = childBlock,
-                                index = childIndex,
-                                onUpdateInstruction = onUpdateInstruction,
-                                onRemoveInstruction = onRemoveInstruction,
-                                onMoveUp = onMoveUp,
-                                onMoveDown = onMoveDown,
-                                onMoveIn = onMoveIn,
-                                onMoveOut = onMoveOut,
-                                onEnableSingleInstructionOptionalField = onEnableSingleInstructionOptionalField,
-                                onAddInstructionGroup = onAddInstructionGroup,
-                                onAddSingleInstruction = onAddSingleInstruction,
-                                onEnableFocusModeForGroup = onEnableFocusModeForGroup,
-                                onDuplicate = onDuplicate
-                            )
-                        }
-
-                        item {
-                            Row {
-                                AddInstructionButton(
-                                    modifier = Modifier.weight(1F),
-                                    text = "Group",
-                                    onClick = { onAddInstructionGroup(block.id) }
-                                )
-                                Spacer(modifier = Modifier.width(16.dp))
-                                AddInstructionButton(
-                                    modifier = Modifier.weight(1F),
-                                    text = "Block",
-                                    onClick = { onAddSingleInstruction(block.id) }
-                                )
-                            }
-                        }
-                    }
-                }
-            )
-        }
-    }
-}
-
-
-@Composable
-fun SingleInstructionDrawer(
-    instruction: InstructionRuntime,
-    index: Int,
-    isMinimized : Boolean,
-    onEditInstruction: (InstructionRuntime) -> Unit,
-    onRemoveInstruction: () -> Unit,
-    onAddInstructionField: () -> Unit,
-    onToggleMinimize: () -> Unit,
-    onDuplicate: () -> Unit,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    onMoveOut: () -> Unit,
-    onMoveIn: () -> Unit,
-) {
-    // Your block
-    when (instruction) {
-        is InstructionRuntime.Visuals.DrawShape -> {
-            DrawShapeInstructionBlock(
-                index = index,
-                instruction = instruction,
-                isMinimized = isMinimized,
-                onEditInstruction = onEditInstruction,
-                onToggleMinimize = onToggleMinimize,
-                onRemoveInstruction = onRemoveInstruction,
+                screenHeight = screenHeight,
+                block = block,
                 onMoveUp = onMoveUp,
+                onUpdateInstruction = onUpdateInstruction,
+                onRemoveInstruction = onRemoveInstruction,
                 onMoveDown = onMoveDown,
-                onMoveOut = onMoveOut,
                 onMoveIn = onMoveIn,
-                onAddInstructionField = onAddInstructionField,
+                onMoveOut = onMoveOut,
+                onEnableSingleInstructionOptionalField = onEnableSingleInstructionOptionalField,
+                onEnableFocusModeForGroup = onEnableFocusModeForGroup,
+                onAddInstructionGroup = onAddInstructionGroup,
+                onAddSingleInstruction = onAddSingleInstruction,
                 onDuplicate = onDuplicate
             )
         }
-
-        is InstructionRuntime.Variables.DefineFloat -> {
-            DefineFloatInstructionBlock(
-                index = index,
-                instruction = instruction,
-                isMinimized = isMinimized,
-                onEditInstruction = onEditInstruction,
-                onToggleMinimize = onToggleMinimize,
-                onRemoveInstruction = onRemoveInstruction,
-                onMoveUp = onMoveUp,
-                onMoveDown = onMoveDown,
-                onMoveOut = onMoveOut,
-                onMoveIn = onMoveIn,
-                onAddInstructionField = onAddInstructionField,
-                onDuplicate = onDuplicate
-            )
-        }
-
-        is InstructionRuntime.Animations.AnimateFloat -> {
-            AnimateFloatInstructionBlock(
-                index = index,
-                instruction = instruction,
-                isMinimized = isMinimized,
-                onEditInstruction = onEditInstruction,
-                onToggleMinimize = onToggleMinimize,
-                onRemoveInstruction = onRemoveInstruction,
-                onMoveUp = onMoveUp,
-                onMoveDown = onMoveDown,
-                onMoveOut = onMoveOut,
-                onMoveIn = onMoveIn,
-                onAddInstructionField = onAddInstructionField,
-                onDuplicate = onDuplicate
-            )
-        }
-
-        is InstructionRuntime.Controls.Wait -> {
-            WaitInstructionBlock(
-                index = index,
-                instruction = instruction,
-                isMinimized = isMinimized,
-                onEditInstruction = onEditInstruction,
-                onToggleMinimize = onToggleMinimize,
-                onRemoveInstruction = onRemoveInstruction,
-                onMoveUp = onMoveUp,
-                onMoveDown = onMoveDown,
-                onMoveOut = onMoveOut,
-                onMoveIn = onMoveIn,
-                onAddInstructionField = onAddInstructionField,
-                onDuplicate = onDuplicate
-            )
-        }
-
-//        is InstructionRuntime.Variables.DefineInteger -> TODO()
-//        is InstructionRuntime.Variables.DefineString -> TODO()
     }
 }
 

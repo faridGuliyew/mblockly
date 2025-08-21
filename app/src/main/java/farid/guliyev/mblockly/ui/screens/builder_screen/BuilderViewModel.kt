@@ -14,8 +14,7 @@ import farid.guliyev.mblockly.domain.BLOCK_CANNOT_BE_MOVED_FURTHER
 import farid.guliyev.mblockly.domain.NO_SUCH_PARENT_WITH_GROUP_ID
 import farid.guliyev.mblockly.domain.TARGET_BLOCK_IS_NOT_GROUP
 import farid.guliyev.mblockly.domain.model.ExceptionType
-import farid.guliyev.mblockly.domain.model.instruction.InstructionRuntime
-import farid.guliyev.mblockly.domain.model.instruction.InstructionType
+import farid.guliyev.mblockly.domain.model.instruction.SingleInstructionType
 import farid.guliyev.mblockly.domain.model.instruction.init
 import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import farid.guliyev.mblockly.ui.navigation.BuilderRoute
@@ -36,7 +35,7 @@ class BuilderViewModel (
         const val ROOT = "ROOT"
         const val MAIN_GROUP_NAME = "MAIN"
 
-        val initialGroup get() = InstructionBlock.InstructionGroup(id = MAIN_GROUP_NAME, parentId = ROOT)
+        val initialGroup get() = InstructionBlock.InstructionGroup(id = MAIN_GROUP_NAME, parentId = ROOT, metaData = InstructionGroupMetaData.Thread)
     }
 
     private val groupFromArgs = savedStateHandle.toRoute<BuilderRoute>().instructionGroup
@@ -106,16 +105,17 @@ class BuilderViewModel (
 
     /** ==== Below functions PRIMARILY interact with STATE. MAY OR MAY NOT interact with main substate ==== */
 
-    fun addSingleInstruction(type: InstructionType) {
+    fun addSingleInstruction(type: SingleInstructionType) {
         runSafelyInBg {
             val parentId = subState.value.addSingleInstructionParentId ?: return@runSafelyInBg
             addInstructionBlock(newBlock = InstructionBlock.SingleInstruction(instruction = type.init(), parentId = parentId))
         }
     }
 
-    fun addInstructionGroup(parentId: String) {
+    fun addInstructionGroup(metadata: InstructionGroupMetaData) {
         runSafelyInBg {
-            val newGroup = InstructionBlock.InstructionGroup(parentId = parentId)
+            val parentId = subState.value.addInstructionGroupParentId ?: return@runSafelyInBg
+            val newGroup = InstructionBlock.InstructionGroup(parentId = parentId, metaData = metadata)
             addInstructionBlock(newBlock = newGroup)
             instructionGroupsById[newGroup.id] = newGroup
         }
@@ -176,6 +176,10 @@ class BuilderViewModel (
 
     fun showAddSingleInstructionOptions(parentId: String) {
         subState.update { it.copy(topBarMode = TopBarMode.ADD_INSTRUCTION, addSingleInstructionParentId = parentId) }
+    }
+
+    fun showAddInstructionGroupOptions(parentId: String) {
+        subState.update { it.copy(topBarMode = TopBarMode.ADD_GROUP, addInstructionGroupParentId = parentId) }
     }
 
     fun showEnableSingleInstructionOptionalField(index: Int, block: InstructionBlock.SingleInstruction) {

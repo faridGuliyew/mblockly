@@ -39,55 +39,19 @@ fun <T, P> InstructionField(
     onValueChanged: (P) -> Unit,
     trailingContent: @Composable () -> Unit = {}
 ) {
-    var isInputValid by remember { mutableStateOf(true) }
-    var input by remember(instructionField.value) { mutableStateOf(instructionField.toString()) }
-
-    val backgroundColor by animateColorAsState(
-        if (isInputValid) BackgroundPrimary else ErrorRed.copy(alpha = 0.05f),
-        label = ""
-    )
-    val borderColor by animateColorAsState(
-        if (isInputValid) PrimaryBlue else ErrorRed,
-        label = ""
-    )
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        backgroundColor,
-                        backgroundColor.copy(alpha = 0.9f)
-                    )
-                )
-            )
-            .border(
-                width = 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(16.dp)
-            )
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
+    CustomTextFieldContainer {
         Text(
             text = instructionField.label,
             fontSize = 15.sp,
             fontWeight = FontWeight.SemiBold,
-            color = if (isInputValid) NeutralGray700 else ErrorRed
+            color = NeutralGray700
         )
 
-        CustomTextField(
-            value = input,
+        CustomTextFieldWithValidator(
+            originalValue = instructionField.value,
             onValueChange = { newInput ->
-                input = newInput
-                isInputValid = instructionField.validator(newInput)
-
-                if (!isInputValid) return@CustomTextField
                 onValueChanged(instructionField.onEdit(newInput))
-            },
-            isError = !isInputValid
+            }, validator = instructionField.validator
         )
 
         trailingContent()

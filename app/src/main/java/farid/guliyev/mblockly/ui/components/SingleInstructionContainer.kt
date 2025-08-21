@@ -1,12 +1,16 @@
 package farid.guliyev.mblockly.ui.components
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import farid.guliyev.mblockly.domain.model.instruction.InstructionType
+import androidx.compose.ui.unit.dp
+import farid.guliyev.mblockly.domain.model.instruction.SingleInstructionType
 
 @Composable
 fun SingleInstructionContainer(
-    type: InstructionType,
+    type: SingleInstructionType,
     isMinimized: Boolean,
     index: Int,
     onRemove: () -> Unit,
@@ -29,7 +33,10 @@ fun SingleInstructionContainer(
         onMoveDown = onMoveDown,
         onToggleMinimize = onToggleMinimize,
         onDuplicate = onDuplicate,
-        content = content
+        content = {
+            Spacer(modifier = Modifier.height(4.dp))
+            content()
+        }
     )
 }
 
@@ -37,7 +44,7 @@ fun SingleInstructionContainer(
 @Composable
 private fun SingleInstructionContainerPrev() {
     SingleInstructionContainer(
-        type = InstructionType.ANIMATE_FLOAT,
+        type = SingleInstructionType.ANIMATE_FLOAT,
         isMinimized = false,
         index = 1,
         onRemove = {},
