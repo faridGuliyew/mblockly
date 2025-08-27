@@ -22,10 +22,13 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
@@ -85,17 +88,19 @@ fun ColumnScope.OutputScreen(
             // DRAW SHAPES
             shapes.values.forEach { shape ->
                 Canvas(modifier = Modifier) {
-                    scale(scale = shape.scale.floatValue) {
-                        translate(left = shape.x.floatValue, top = shape.y.floatValue) {
-                            drawRoundRect(
-                                color = Color(shape.color),
-                                size = Size(shape.width.floatValue, shape.height.floatValue),
-                                cornerRadius = CornerRadius(
-                                    x = shape.cornerRadius.floatValue,
-                                    y = shape.cornerRadius.floatValue
-                                )
+                    withTransform (transformBlock = {
+                        scale(scale = shape.scale.value)
+                        translate(left = shape.x.value, top = shape.y.value)
+                        rotate(degrees = shape.rotation.value, pivot = Offset(shape.width.value / 2F, shape.height.value / 2F))
+                    }) {
+                        drawRoundRect(
+                            color = Color(shape.color),
+                            size = Size(shape.width.value, shape.height.value),
+                            cornerRadius = CornerRadius(
+                                x = shape.cornerRadius.value,
+                                y = shape.cornerRadius.value
                             )
-                        }
+                        )
                     }
                 }
             }
@@ -191,6 +196,7 @@ suspend fun handleSingleInstruction(
                 width = instruction.width.value.extractValue(floatVariableStates),
                 height = instruction.height.value.extractValue(floatVariableStates),
                 cornerRadius = instruction.cornerRadius.value.extractValue(floatVariableStates),
+                rotation = instruction.rotation.value.extractValue(floatVariableStates),
                 scale = instruction.scaleField.value.extractValue(floatVariableStates),
                 x = instruction.x.value.extractValue(floatVariableStates),
                 y = instruction.y.value.extractValue(floatVariableStates)

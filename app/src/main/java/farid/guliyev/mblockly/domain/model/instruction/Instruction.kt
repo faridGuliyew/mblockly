@@ -115,6 +115,11 @@ sealed interface InstructionRuntime {
                 validator = StringValidator,
                 onEdit = { v -> DrawShape(base.updateField(cornerRadius = v)) }
             )
+            val rotation = InstructionField<Float, DrawShape>(
+                base.rotation,
+                validator = StringValidator,
+                onEdit = { v -> DrawShape(base.updateField(rotation = v)) }
+            )
             val color = InstructionField<String, DrawShape>(
                 base.color,
                 validator = ColorValidator,
@@ -275,13 +280,14 @@ sealed interface Instruction {
             val width: InstructionFieldData = InstructionFieldData("Width", "200.0"),
             val height: InstructionFieldData = InstructionFieldData("Height", "200.0"),
             val cornerRadius: InstructionFieldData = InstructionFieldData("Corner Radius", "0.0"),
+            val rotation: InstructionFieldData = InstructionFieldData("Rotation", "0.0"),
             val color: InstructionFieldData = InstructionFieldData("Color", "FF0000FF"),
             val scaleField: InstructionFieldData = InstructionFieldData("Scale", "1.0"),
             val enabledOptionalFields: Set<OptionalFields> = emptySet()
         ) : Visuals {
 
             enum class OptionalFields {
-                CORNER_RADIUS_FIELD, COLOR_FIELD, SCALE_FIELD
+                CORNER_RADIUS_FIELD, COLOR_FIELD, SCALE_FIELD, ROTATION
             }
 
             fun updateField(
@@ -292,6 +298,7 @@ sealed interface Instruction {
                 height: String = this.height.value,
                 color: String = this.color.value,
                 cornerRadius: String = this.cornerRadius.value,
+                rotation: String = this.rotation.value,
                 scale: String = this.scaleField.value,
                 enabledOptionalFields: Set<OptionalFields> = this.enabledOptionalFields
             ): DrawShape = DrawShape(
@@ -302,6 +309,7 @@ sealed interface Instruction {
                 height = this.height.copy(value = height),
                 color = this.color.copy(value = color),
                 cornerRadius = this.cornerRadius.copy(value = cornerRadius),
+                rotation = this.rotation.copy(value = rotation),
                 scaleField = this.scaleField.copy(value = scale),
                 enabledOptionalFields = enabledOptionalFields
             )
@@ -311,6 +319,7 @@ sealed interface Instruction {
                     OptionalFields.CORNER_RADIUS_FIELD -> updateField(cornerRadius = "0")
                     OptionalFields.COLOR_FIELD -> updateField(color = "FF0000FF")
                     OptionalFields.SCALE_FIELD -> updateField(scale = "1")
+                    OptionalFields.ROTATION -> updateField(rotation = "0.0")
                 }
 
             override fun buildRuntime(): InstructionRuntime {

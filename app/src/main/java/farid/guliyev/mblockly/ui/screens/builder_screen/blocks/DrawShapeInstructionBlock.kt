@@ -85,6 +85,15 @@ fun DrawShapeInstructionBlock(
             )
             OptionalInstructionField(
                 enabledOptionalFields = instruction.base.enabledOptionalFields,
+                optionalField = ROTATION,
+                name = { it.name },
+                instruction = instruction,
+                instructionField = instruction.rotation,
+                onValueChanged = onEditInstruction,
+                onDisable = onEditInstruction
+            )
+            OptionalInstructionField(
+                enabledOptionalFields = instruction.base.enabledOptionalFields,
                 optionalField = COLOR_FIELD,
                 name = { it.name },
                 instruction = instruction,
