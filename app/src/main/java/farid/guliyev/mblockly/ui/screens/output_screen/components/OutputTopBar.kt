@@ -40,9 +40,8 @@ fun OutputTopBar(
     val shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
     Column (
         modifier = modifier
-            .clip(shape)
             .background(color = BackgroundSecondary)
-            .border(width = 1.dp, color = NeutralGray400, shape = shape)
+            .border(width = 1.dp, color = NeutralGray400)
     ) {
         Box (contentAlignment = Alignment.Center) {
             HorizontalDivider(thickness = 10.dp, color = NeutralGray900)

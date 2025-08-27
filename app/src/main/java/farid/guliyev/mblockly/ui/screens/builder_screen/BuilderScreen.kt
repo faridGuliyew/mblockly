@@ -78,12 +78,15 @@ fun BuilderScreen(
             )
         }
     ) { innerPadding ->
-        Column (
+        Column(
             modifier = Modifier
                 .padding(innerPadding)
         ) {
-            Box(modifier = Modifier.weight(1F - splitScreenWeight)
-                .padding(12.dp)) {
+            Box(
+                modifier = Modifier
+                    .weight(1F - splitScreenWeight)
+                    .padding(12.dp)
+            ) {
                 InstructionBlockDrawer(
                     block = state.mainInstructionGroup,
                     index = -1,
@@ -106,7 +109,8 @@ fun BuilderScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .background(color = BackgroundPrimary)
-                            .verticalScroll(rememberScrollState())) {
+                            .verticalScroll(rememberScrollState())
+                    ) {
                         InstructionBlockDrawer(
                             block = groupWithIndex.first.copy(isMinimized = false),
                             index = groupWithIndex.second,
@@ -144,8 +148,13 @@ fun BuilderScreen(
                     currentDrag = splitScreenWeight,
                     onDrag = { splitScreenWeight = it },
                     onFinish = {
-                    isRunning = false
-                })
+                        isRunning = false
+                    },
+                    onError = {
+                        viewModel.showErrorAlert(it)
+                        isRunning = false
+                    }
+                )
             }
         }
     }
@@ -176,12 +185,17 @@ fun InstructionBlockDrawer(
                 index = index,
                 isMinimized = block.isMinimized,
                 onEditInstruction = { onUpdateInstruction(index, block.copy(instruction = it)) },
-                onToggleMinimize = { onUpdateInstruction(index, block.copy(isMinimized = !block.isMinimized)) },
+                onToggleMinimize = {
+                    onUpdateInstruction(
+                        index,
+                        block.copy(isMinimized = !block.isMinimized)
+                    )
+                },
                 onRemoveInstruction = { onRemoveInstruction(index, block) },
                 onMoveUp = { onMoveUp(index, block) },
                 onMoveDown = { onMoveDown(index, block) },
                 onMoveOut = { onMoveOut(index, block) },
-                onMoveIn =  { onMoveIn(index, block) },
+                onMoveIn = { onMoveIn(index, block) },
                 onDuplicate = { onDuplicate(index, block) },
                 onAddInstructionField = { onEnableSingleInstructionOptionalField(index, block) }
             )

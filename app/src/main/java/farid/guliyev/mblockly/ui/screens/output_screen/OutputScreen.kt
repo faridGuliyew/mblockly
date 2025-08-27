@@ -35,8 +35,8 @@ import farid.guliyev.mblockly.domain.model.instruction.Instruction
 import farid.guliyev.mblockly.ui.model.UiShape
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupMetaData
-import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupType
 import farid.guliyev.mblockly.ui.screens.output_screen.components.OutputTopBar
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -46,12 +46,19 @@ fun ColumnScope.OutputScreen(
     mainInstructionGroup: InstructionBlock.InstructionGroup,
     onFinish: () -> Unit,
     currentDrag: Float = 0.5F,
+    onError: (Exception) -> Unit,
     onDrag: (amount: Float) -> Unit
 ) {
     val shapes = remember { mutableStateMapOf<String, UiShape>() }
     val floatVariableStates = remember { mutableStateMapOf<String, MutableFloatState>() }
     LaunchedEffect(Unit) {
-        handleInstructionGroup(group = mainInstructionGroup, shapes = shapes, floatVariableStates = floatVariableStates)
+        try {
+            handleInstructionGroup(group = mainInstructionGroup, shapes = shapes, floatVariableStates = floatVariableStates)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            onError(e)
+        }
     }
 
     Scaffold(
@@ -243,7 +250,7 @@ private fun OutputScreenPrev() {
     Column {
         OutputScreen(
             mainInstructionGroup = InstructionBlock.InstructionGroup(parentId = "", metaData = InstructionGroupMetaData.Thread),
-            onFinish = {}, onDrag = {}
+            onFinish = {}, onDrag = {}, onError = {}
         )
     }
 }

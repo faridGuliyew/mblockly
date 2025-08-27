@@ -42,6 +42,10 @@ abstract class BaseViewModel : ViewModel() {
         if (!isConfirmed) failGracefully("Action is cancelled!", ExceptionType.INFO)
     }
 
+    fun showErrorAlert(e: Exception) {
+        CommsModule.alertChannel.trySendException(e)
+    }
+
     fun hideSheet() {
         sheetState.update { SheetType.HIDDEN }
     }
