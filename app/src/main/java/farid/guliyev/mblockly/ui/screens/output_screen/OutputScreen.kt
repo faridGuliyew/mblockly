@@ -35,6 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import farid.guliyev.mblockly.domain.UNDEFINED_VARIABLE
 import farid.guliyev.mblockly.domain.model.instruction.Instruction
+import farid.guliyev.mblockly.ui.model.UiLine
 import farid.guliyev.mblockly.ui.model.UiShape
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupMetaData
@@ -43,6 +44,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 @Composable
 fun ColumnScope.OutputScreen(
@@ -53,10 +55,16 @@ fun ColumnScope.OutputScreen(
     onDrag: (amount: Float) -> Unit
 ) {
     val shapes = remember { mutableStateMapOf<String, UiShape>() }
+    val lines = remember { mutableStateMapOf<String, UiLine>() }
     val floatVariableStates = remember { mutableStateMapOf<String, MutableFloatState>() }
     LaunchedEffect(Unit) {
         try {
-            handleInstructionGroup(group = mainInstructionGroup, shapes = shapes, floatVariableStates = floatVariableStates)
+            handleInstructionGroup(
+                group = mainInstructionGroup,
+                shapes = shapes,
+                floatVariableStates = floatVariableStates,
+                lines = lines
+            )
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -105,7 +113,17 @@ fun ColumnScope.OutputScreen(
                 }
             }
 
-
+            // DRAW LINES
+            lines.values.forEach { line->
+                Canvas(modifier = Modifier) {
+                    drawLine(
+                        color = Color(line.color),
+                        start = Offset(line.startX.value, line.startY.value),
+                        end = Offset(line.endX.value, line.endY.value),
+                        strokeWidth = line.thickness.value
+                    )
+                }
+            }
         }
     }
 }
@@ -113,6 +131,7 @@ fun ColumnScope.OutputScreen(
 suspend fun handleInstructionGroup(
     group: InstructionBlock.InstructionGroup,
     shapes: SnapshotStateMap<String, UiShape>,
+    lines: SnapshotStateMap<String, UiLine>,
     floatVariableStates: SnapshotStateMap<String, MutableFloatState>
 ) {
     coroutineScope {
@@ -122,6 +141,7 @@ suspend fun handleInstructionGroup(
                     handleSingleInstruction(
                         instruction = block.instruction.base,
                         shapes = shapes,
+                        lines = lines,
                         floatVariableStates = floatVariableStates
                     )
                     return@forEach
@@ -134,7 +154,8 @@ suspend fun handleInstructionGroup(
                                 handleInstructionGroup(
                                     group = block,
                                     shapes = shapes,
-                                    floatVariableStates = floatVariableStates
+                                    floatVariableStates = floatVariableStates,
+                                    lines = lines
                                 )
 
                                 println("--------------------------------------")
@@ -149,7 +170,8 @@ suspend fun handleInstructionGroup(
                                 handleInstructionGroup(
                                     group = block,
                                     shapes = shapes,
-                                    floatVariableStates = floatVariableStates
+                                    floatVariableStates = floatVariableStates,
+                                    lines = lines
                                 )
 
                                 println("--------------------------------------")
@@ -164,7 +186,8 @@ suspend fun handleInstructionGroup(
                                 handleInstructionGroup(
                                     group = block,
                                     shapes = shapes,
-                                    floatVariableStates = floatVariableStates
+                                    floatVariableStates = floatVariableStates,
+                                    lines = lines
                                 )
 
                                 println("--------------------------------------")
@@ -184,6 +207,7 @@ suspend fun handleInstructionGroup(
 suspend fun handleSingleInstruction(
     instruction: Instruction,
     shapes: SnapshotStateMap<String, UiShape>,
+    lines: SnapshotStateMap<String, UiLine>,
     floatVariableStates: SnapshotStateMap<String, MutableFloatState>
     ) {
     when (instruction) {
@@ -203,6 +227,17 @@ suspend fun handleSingleInstruction(
             )
         }
 
+        is Instruction.Visuals.DrawLine -> {
+
+            lines[UUID.randomUUID().toString().take(10)] = UiLine(
+                startX = instruction.startX.value.extractValue(floatVariableStates),
+                startY = instruction.startY.value.extractValue(floatVariableStates),
+                endX = instruction.endX.value.extractValue(floatVariableStates),
+                endY = instruction.endY.value.extractValue(floatVariableStates),
+                thickness = instruction.thickness.value.extractValue(floatVariableStates),
+                color = instruction.color.value.toLong(16),
+            )
+        }
         is Instruction.Variables.DefineFloat -> {
             val floatName = instruction.nameField.value
             if (floatVariableStates.contains(floatName)) {

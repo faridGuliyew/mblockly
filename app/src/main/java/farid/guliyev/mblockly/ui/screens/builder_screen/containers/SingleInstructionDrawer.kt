@@ -9,6 +9,7 @@ import farid.guliyev.mblockly.domain.model.instruction.InstructionRuntime
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.AnimateFloatInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.ChangeFloatInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DefineFloatInstructionBlock
+import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawLineInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawShapeInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.WaitInstructionBlock
 
@@ -31,6 +32,22 @@ fun SingleInstructionDrawer(
     when (instruction) {
         is InstructionRuntime.Visuals.DrawShape -> {
             DrawShapeInstructionBlock(
+                index = index,
+                instruction = instruction,
+                isMinimized = isMinimized,
+                onEditInstruction = onEditInstruction,
+                onToggleMinimize = onToggleMinimize,
+                onRemoveInstruction = onRemoveInstruction,
+                onMoveUp = onMoveUp,
+                onMoveDown = onMoveDown,
+                onMoveOut = onMoveOut,
+                onMoveIn = onMoveIn,
+                onAddInstructionField = onAddInstructionField,
+                onDuplicate = onDuplicate
+            )
+        }
+        is InstructionRuntime.Visuals.DrawLine -> {
+            DrawLineInstructionBlock(
                 index = index,
                 instruction = instruction,
                 isMinimized = isMinimized,

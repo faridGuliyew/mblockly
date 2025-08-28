@@ -131,6 +131,39 @@ sealed interface InstructionRuntime {
                 onEdit = { v -> DrawShape(base.updateField(scale = v)) }
             )
         }
+
+        class DrawLine(override val base: Instruction.Visuals.DrawLine = Instruction.Visuals.DrawLine()) : Visuals {
+            val startX = InstructionField<Float, DrawLine>(
+                base.startX,
+                validator = StringValidator,
+                onEdit = { v -> DrawLine(base.updateField(startX = v)) }
+            )
+            val startY = InstructionField<Float, DrawLine>(
+                base.startY,
+                validator = StringValidator,
+                onEdit = { v -> DrawLine(base.updateField(startY = v)) }
+            )
+            val endX = InstructionField<Float, DrawLine>(
+                base.endX,
+                validator = StringValidator,
+                onEdit = { v -> DrawLine(base.updateField(endX = v)) }
+            )
+            val endY = InstructionField<Float, DrawLine>(
+                base.endY,
+                validator = StringValidator,
+                onEdit = { v -> DrawLine(base.updateField(endY = v)) }
+            )
+            val color = InstructionField<String, DrawLine>(
+                base.color,
+                validator = ColorValidator,
+                onEdit = { v -> DrawLine(base.updateField(color = v)) }
+            )
+            val thickness = InstructionField<Float, DrawLine>(
+                base.thickness,
+                validator = StringValidator,
+                onEdit = { v -> DrawLine(base.updateField(thickness = v)) }
+            )
+        }
     }
 }
 
@@ -144,6 +177,15 @@ sealed interface Instruction {
         when (this) {
             is Visuals.DrawShape -> {
                 val field = Visuals.DrawShape.OptionalFields.valueOf(name)
+                var updatedInstruction = this.updateField(
+                    enabledOptionalFields = if (isEnabled) enabledOptionalFields + field else enabledOptionalFields - field
+                )
+
+                if (!isEnabled) { updatedInstruction = updatedInstruction.resetOptionalField(field ) }
+                return updatedInstruction
+            }
+            is Visuals.DrawLine -> {
+                val field = Visuals.DrawLine.OptionalFields.valueOf(name)
                 var updatedInstruction = this.updateField(
                     enabledOptionalFields = if (isEnabled) enabledOptionalFields + field else enabledOptionalFields - field
                 )
@@ -326,6 +368,51 @@ sealed interface Instruction {
                 return InstructionRuntime.Visuals.DrawShape(this)
             }
         }
+
+
+        @Serializable
+        data class DrawLine(
+            val startX: InstructionFieldData = InstructionFieldData("Start X", "0.0"),
+            val startY: InstructionFieldData = InstructionFieldData("Start Y", "0.0"),
+            val endX: InstructionFieldData = InstructionFieldData("End X", "100.0"),
+            val endY: InstructionFieldData = InstructionFieldData("End Y", "100.0"),
+            val color: InstructionFieldData = InstructionFieldData("Color", "FF0000FF"),
+            val thickness: InstructionFieldData = InstructionFieldData("Thickness", "1.0"),
+            val enabledOptionalFields: Set<OptionalFields> = emptySet()
+        ) : Visuals {
+
+            enum class OptionalFields {
+                COLOR_FIELD, THICKNESS_FIELD
+            }
+
+            fun updateField(
+                startX: String = this.startX.value,
+                startY: String = this.startY.value,
+                endX: String = this.endX.value,
+                endY: String = this.endY.value,
+                color: String = this.color.value,
+                thickness: String = this.thickness.value,
+                enabledOptionalFields: Set<OptionalFields> = this.enabledOptionalFields
+            ): DrawLine = DrawLine(
+                startX = this.startX.copy(value = startX),
+                startY = this.startY.copy(value = startY),
+                endX = this.endX.copy(value = endX),
+                endY = this.endY.copy(value = endY),
+                color = this.color.copy(value = color),
+                thickness = this.thickness.copy(value = thickness),
+                enabledOptionalFields = enabledOptionalFields
+            )
+
+            fun resetOptionalField(field: OptionalFields): DrawLine =
+                when (field) {
+                    OptionalFields.COLOR_FIELD -> updateField(color = "FF0000FF")
+                    OptionalFields.THICKNESS_FIELD -> updateField(thickness = "1.0")
+                }
+
+            override fun buildRuntime(): InstructionRuntime {
+                return InstructionRuntime.Visuals.DrawLine(this)
+            }
+        }
     }
 }
 
@@ -343,6 +430,7 @@ val Instruction.type
         is Instruction.Visuals -> {
             when (this) {
                 is Instruction.Visuals.DrawShape -> SingleInstructionType.DRAW_SHAPE
+                is Instruction.Visuals.DrawLine -> SingleInstructionType.DRAW_LINE
             }
         }
 
@@ -364,6 +452,7 @@ val Instruction.optionalFields: List<String>
         is Instruction.Visuals -> {
             when (this) {
                 is Instruction.Visuals.DrawShape -> Instruction.Visuals.DrawShape.OptionalFields.entries.map { it.name }
+                is Instruction.Visuals.DrawLine -> Instruction.Visuals.DrawLine.OptionalFields.entries.map { it.name }
             }
         }
         is Instruction.Variables -> when (this) {
@@ -381,6 +470,7 @@ enum class SingleInstructionType(val description: String, val label: String = ""
     CHANGE_FLOAT("➕ Change FLOAT by value", "Change float"),
     ANIMATE_FLOAT(description = "🤸‍♀️ Animate FLOAT", label = "Animate float"),
     DRAW_SHAPE(description = "📐 Draw a shape", label = "Draw shape"),
+    DRAW_LINE("📏 Draw a line", "Draw line"),
     WAIT(description = "😴 Wait", label = "Wait")
 }
 
@@ -391,6 +481,7 @@ fun SingleInstructionType.init(): InstructionRuntime {
         SingleInstructionType.SET_FLOAT -> InstructionRuntime.Variables.DefineFloat()
         SingleInstructionType.CHANGE_FLOAT -> InstructionRuntime.Variables.ChangeFloat()
         SingleInstructionType.DRAW_SHAPE -> InstructionRuntime.Visuals.DrawShape()
+        SingleInstructionType.DRAW_LINE -> InstructionRuntime.Visuals.DrawLine()
         SingleInstructionType.ANIMATE_FLOAT -> InstructionRuntime.Animations.AnimateFloat()
         SingleInstructionType.WAIT -> InstructionRuntime.Controls.Wait()
     }
