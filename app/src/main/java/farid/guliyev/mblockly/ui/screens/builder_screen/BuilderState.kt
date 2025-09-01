@@ -7,6 +7,7 @@ import farid.guliyev.mblockly.domain.model.instruction.InstructionRuntime
 import farid.guliyev.mblockly.domain.model.instruction.optionalFields
 import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderViewModel.Companion.initialGroup
+import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupMetaData.*
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -108,18 +109,25 @@ sealed interface InstructionGroupMetaData {
     data class FiniteLoop (val loopCount: String): InstructionGroupMetaData {
         override val groupType: InstructionGroupType = InstructionGroupType.FINITE_LOOP
     }
+
+    @Serializable
+    data class Conditional(val condition: String): InstructionGroupMetaData {
+        override val groupType: InstructionGroupType = InstructionGroupType.CONDITIONAL
+    }
 }
 
 enum class InstructionGroupType (val description: String, val label: String) {
     THREAD(description = "💾 Add a new thread for parallel execution", label = "Thread"),
     INFINITE_LOOP(description = "😴 Add an infinite loop", label = "Infinite loop"),
-    FINITE_LOOP(description = "😴 Add a finite loop", label = "Finite loop")
+    FINITE_LOOP(description = "😴 Add a finite loop", label = "Finite loop"),
+    CONDITIONAL(description = "🧩 Add a conditional check", label = "Conditional")
 }
 
 fun InstructionGroupType.init() : InstructionGroupMetaData {
     return when(this) {
-        InstructionGroupType.THREAD -> InstructionGroupMetaData.Thread
-        InstructionGroupType.INFINITE_LOOP -> InstructionGroupMetaData.InfiniteLoop
-        InstructionGroupType.FINITE_LOOP -> InstructionGroupMetaData.FiniteLoop("1")
+        InstructionGroupType.THREAD -> Thread
+        InstructionGroupType.INFINITE_LOOP -> InfiniteLoop
+        InstructionGroupType.FINITE_LOOP -> FiniteLoop("1")
+        InstructionGroupType.CONDITIONAL -> Conditional("")
     }
 }

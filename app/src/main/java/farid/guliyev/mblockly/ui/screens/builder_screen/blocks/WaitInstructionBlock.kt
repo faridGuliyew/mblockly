@@ -15,39 +15,16 @@ import farid.guliyev.mblockly.ui.components.InstructionField
 @Composable
 fun WaitInstructionBlock(
     instruction: InstructionRuntime.Controls.Wait,
-    index: Int,
-    isMinimized : Boolean,
     onEditInstruction: (InstructionRuntime.Controls.Wait) -> Unit,
-    onRemoveInstruction: () -> Unit,
-    onAddInstructionField: () -> Unit,
-    onDuplicate: () -> Unit,
-    onToggleMinimize: () -> Unit,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    onMoveOut: () -> Unit,
-    onMoveIn: () -> Unit,
 ) {
-    SingleInstructionContainer (
-        index = index,
-        isMinimized = isMinimized,
-        type = instruction.base.type,
-        onRemove = onRemoveInstruction,
-        onMoveDown = onMoveDown,
-        onMoveUp = onMoveUp,
-        onToggleMinimize = onToggleMinimize,
-        onMoveOut = onMoveOut,
-        onMoveIn = onMoveIn,
-        onDuplicate = onDuplicate
+    // Inputs row
+    FlowRow(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Inputs row
-        FlowRow(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            InstructionField(
-                instructionField = instruction.durationField,
-                onValueChanged = onEditInstruction
-            )
-        }
+        InstructionField(
+            instructionField = instruction.durationField,
+            onValueChanged = onEditInstruction
+        )
     }
 }

@@ -16,57 +16,21 @@ import farid.guliyev.mblockly.ui.components.InstructionField
 @Composable
 fun DefineFloatInstructionBlock(
     instruction: InstructionRuntime.Variables.DefineFloat,
-    index: Int,
-    isMinimized : Boolean,
-    onEditInstruction: (InstructionRuntime.Variables.DefineFloat) -> Unit,
-    onRemoveInstruction: () -> Unit,
-    onAddInstructionField: () -> Unit,
-    onToggleMinimize: () -> Unit,
-    onDuplicate: () -> Unit,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    onMoveOut: () -> Unit,
-    onMoveIn: () -> Unit,
+    onEditInstruction: (InstructionRuntime.Variables.DefineFloat) -> Unit
 ) {
-    SingleInstructionContainer (
-        index = index,
-        type = instruction.base.type,
-        onRemove = onRemoveInstruction,
-        onMoveDown = onMoveDown,
-        onMoveUp = onMoveUp,
-        isMinimized = isMinimized,
-        onToggleMinimize = onToggleMinimize,
-        onMoveOut = onMoveOut,
-        onMoveIn = onMoveIn,
-        onDuplicate = onDuplicate
+    // Inputs row
+    FlowRow(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Inputs row
-        FlowRow(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            InstructionField(
-                instructionField = instruction.nameField,
-                onValueChanged = onEditInstruction
-            )
+        InstructionField(
+            instructionField = instruction.nameField,
+            onValueChanged = onEditInstruction
+        )
 
-            InstructionField(
-                instructionField = instruction.valueField,
-                onValueChanged = onEditInstruction
-            )
-        }
+        InstructionField(
+            instructionField = instruction.valueField,
+            onValueChanged = onEditInstruction
+        )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun DrawShapeBlockComponentPrev() {
-    DrawShapeInstructionBlock(
-        instruction = InstructionRuntime.Visuals.DrawShape(Instruction.Visuals.DrawShape()),
-        index = 0,
-        onEditInstruction = {},
-        onRemoveInstruction = {},
-        onMoveDown = {}, onMoveUp = {}, onAddInstructionField = {}, onToggleMinimize = {},isMinimized = false,
-        onMoveOut = {}, onMoveIn = {}, onDuplicate = {}
-    )
 }

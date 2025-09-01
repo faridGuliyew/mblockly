@@ -63,7 +63,8 @@ fun ColumnScope.OutputScreen(
                 group = mainInstructionGroup,
                 shapes = shapes,
                 floatVariableStates = floatVariableStates,
-                lines = lines
+                lines = lines,
+                onError = onError
             )
         } catch (e: CancellationException) {
             throw e
@@ -82,7 +83,10 @@ fun ColumnScope.OutputScreen(
             OutputTopBar(
                 modifier = Modifier.pointerInput(Unit) {
                     detectDragGestures { _, dragAmount ->
-                        val newDrag = (currentDrag - dragAmount.y / (screenHeight.toPx())).coerceIn(0.1F, 0.99F)
+                        val newDrag = (currentDrag - dragAmount.y / (screenHeight.toPx())).coerceIn(
+                            0.1F,
+                            0.99F
+                        )
                         println("newDrag: $newDrag")
                         onDrag(newDrag)
                     }
@@ -91,15 +95,20 @@ fun ColumnScope.OutputScreen(
             )
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(innerPadding)) {
 
             // DRAW SHAPES
             shapes.values.forEach { shape ->
                 Canvas(modifier = Modifier) {
-                    withTransform (transformBlock = {
+                    withTransform(transformBlock = {
                         scale(scale = shape.scale.value)
                         translate(left = shape.x.value, top = shape.y.value)
-                        rotate(degrees = shape.rotation.value, pivot = Offset(shape.width.value / 2F, shape.height.value / 2F))
+                        rotate(
+                            degrees = shape.rotation.value,
+                            pivot = Offset(shape.width.value / 2F, shape.height.value / 2F)
+                        )
                     }) {
                         drawRoundRect(
                             color = Color(shape.color),
@@ -114,7 +123,7 @@ fun ColumnScope.OutputScreen(
             }
 
             // DRAW LINES
-            lines.values.forEach { line->
+            lines.values.forEach { line ->
                 Canvas(modifier = Modifier) {
                     drawLine(
                         color = Color(line.color),
@@ -132,74 +141,90 @@ suspend fun handleInstructionGroup(
     group: InstructionBlock.InstructionGroup,
     shapes: SnapshotStateMap<String, UiShape>,
     lines: SnapshotStateMap<String, UiLine>,
-    floatVariableStates: SnapshotStateMap<String, MutableFloatState>
+    floatVariableStates: SnapshotStateMap<String, MutableFloatState>,
+    onError: (Exception) -> Unit
 ) {
     coroutineScope {
-        group.instructionBlocks.forEach { block->
-            when (block) {
-                is InstructionBlock.SingleInstruction -> {
-                    handleSingleInstruction(
-                        instruction = block.instruction.base,
-                        shapes = shapes,
-                        lines = lines,
-                        floatVariableStates = floatVariableStates
-                    )
-                    return@forEach
-                }
+        try {
+            group.instructionBlocks.forEach { block ->
+                when (block) {
+                    is InstructionBlock.SingleInstruction -> {
+                        handleSingleInstruction(
+                            instruction = block.instruction.base,
+                            shapes = shapes,
+                            lines = lines,
+                            floatVariableStates = floatVariableStates,
+                            onError = onError
+                        )
+                        return@forEach
+                    }
 
-                is InstructionBlock.InstructionGroup -> {
-                    when (val metadata = block.metaData) {
-                        InstructionGroupMetaData.Thread -> {
-                            launch {
-                                handleInstructionGroup(
-                                    group = block,
-                                    shapes = shapes,
-                                    floatVariableStates = floatVariableStates,
-                                    lines = lines
-                                )
+                    is InstructionBlock.InstructionGroup -> {
+                        when (val metadata = block.metaData) {
+                            InstructionGroupMetaData.Thread -> {
+                                launch {
+                                    handleInstructionGroup(
+                                        group = block,
+                                        shapes = shapes,
+                                        floatVariableStates = floatVariableStates,
+                                        lines = lines,
+                                        onError = onError
+                                    )
 
-                                println("--------------------------------------")
-                                println("OUTPUT OF INSTRUCTION GROUP: ${block.id}")
-                                println("OUTPUT: Shapes: ${shapes.map { it.value }}")
-                                println("OUTPUT: Floats: ${floatVariableStates.keys}")
-                                println("--------------------------------------")
+                                    println("--------------------------------------")
+                                    println("OUTPUT OF INSTRUCTION GROUP: ${block.id}")
+                                    println("OUTPUT: Shapes: ${shapes.map { it.value }}")
+                                    println("OUTPUT: Floats: ${floatVariableStates.keys}")
+                                    println("--------------------------------------")
+                                }
                             }
-                        }
-                        is InstructionGroupMetaData.FiniteLoop -> {
-                            repeat(metadata.loopCount.toInt()) {
-                                handleInstructionGroup(
-                                    group = block,
-                                    shapes = shapes,
-                                    floatVariableStates = floatVariableStates,
-                                    lines = lines
-                                )
 
-                                println("--------------------------------------")
-                                println("OUTPUT OF INSTRUCTION GROUP: ${block.id}")
-                                println("OUTPUT: Shapes: ${shapes.map { it.value }}")
-                                println("OUTPUT: Floats: ${floatVariableStates.keys}")
-                                println("--------------------------------------")
+                            is InstructionGroupMetaData.FiniteLoop -> {
+                                repeat(metadata.loopCount.toInt()) {
+                                    handleInstructionGroup(
+                                        group = block,
+                                        shapes = shapes,
+                                        floatVariableStates = floatVariableStates,
+                                        lines = lines,
+                                        onError = onError
+                                    )
+
+                                    println("--------------------------------------")
+                                    println("OUTPUT OF INSTRUCTION GROUP: ${block.id}")
+                                    println("OUTPUT: Shapes: ${shapes.map { it.value }}")
+                                    println("OUTPUT: Floats: ${floatVariableStates.keys}")
+                                    println("--------------------------------------")
+                                }
                             }
-                        }
-                        InstructionGroupMetaData.InfiniteLoop -> {
-                            while (true) {
-                                handleInstructionGroup(
-                                    group = block,
-                                    shapes = shapes,
-                                    floatVariableStates = floatVariableStates,
-                                    lines = lines
-                                )
 
-                                println("--------------------------------------")
-                                println("OUTPUT OF INSTRUCTION GROUP: ${block.id}")
-                                println("OUTPUT: Shapes: ${shapes.map { it.value }}")
-                                println("OUTPUT: Floats: ${floatVariableStates.keys}")
-                                println("--------------------------------------")
+                            InstructionGroupMetaData.InfiniteLoop -> {
+                                while (true) {
+                                    handleInstructionGroup(
+                                        group = block,
+                                        shapes = shapes,
+                                        floatVariableStates = floatVariableStates,
+                                        lines = lines,
+                                        onError = onError
+                                    )
+
+                                    println("--------------------------------------")
+                                    println("OUTPUT OF INSTRUCTION GROUP: ${block.id}")
+                                    println("OUTPUT: Shapes: ${shapes.map { it.value }}")
+                                    println("OUTPUT: Floats: ${floatVariableStates.keys}")
+                                    println("--------------------------------------")
+                                }
+                            }
+
+                            is InstructionGroupMetaData.Conditional -> {
+                                val condition = block.metaData.condition
+                                error("Conditional block are not yet supported!")
                             }
                         }
                     }
                 }
             }
+        } catch (e: Exception) {
+            println("Exception: ${e.stackTraceToString()}")
         }
     }
 }
@@ -208,80 +233,94 @@ suspend fun handleSingleInstruction(
     instruction: Instruction,
     shapes: SnapshotStateMap<String, UiShape>,
     lines: SnapshotStateMap<String, UiLine>,
-    floatVariableStates: SnapshotStateMap<String, MutableFloatState>
-    ) {
-    when (instruction) {
-        is Instruction.Variables.DefineInteger -> TODO()
-        is Instruction.Variables.DefineString -> TODO()
-        is Instruction.Visuals.DrawShape -> {
+    floatVariableStates: SnapshotStateMap<String, MutableFloatState>,
+    onError: (Exception) -> Unit
+) {
+    try {
+        when (instruction) {
+            is Instruction.Variables.DefineInteger -> TODO()
+            is Instruction.Variables.DefineString -> TODO()
+            is Instruction.Visuals.DrawShape -> {
 
-            shapes[instruction.name.value] = UiShape(
-                color = instruction.color.value.toLong(16),
-                width = instruction.width.value.extractValue(floatVariableStates),
-                height = instruction.height.value.extractValue(floatVariableStates),
-                cornerRadius = instruction.cornerRadius.value.extractValue(floatVariableStates),
-                rotation = instruction.rotation.value.extractValue(floatVariableStates),
-                scale = instruction.scaleField.value.extractValue(floatVariableStates),
-                x = instruction.x.value.extractValue(floatVariableStates),
-                y = instruction.y.value.extractValue(floatVariableStates)
-            )
-        }
-
-        is Instruction.Visuals.DrawLine -> {
-
-            lines[UUID.randomUUID().toString().take(10)] = UiLine(
-                startX = instruction.startX.value.extractValue(floatVariableStates),
-                startY = instruction.startY.value.extractValue(floatVariableStates),
-                endX = instruction.endX.value.extractValue(floatVariableStates),
-                endY = instruction.endY.value.extractValue(floatVariableStates),
-                thickness = instruction.thickness.value.extractValue(floatVariableStates),
-                color = instruction.color.value.toLong(16),
-            )
-        }
-        is Instruction.Variables.DefineFloat -> {
-            val floatName = instruction.nameField.value
-            if (floatVariableStates.contains(floatName)) {
-                floatVariableStates[floatName]?.floatValue = instruction.valueField.value.toFloat()
-            } else {
-                floatVariableStates[instruction.nameField.value] = mutableFloatStateOf(instruction.valueField.value.toFloat())
+                shapes[instruction.name.value] = UiShape(
+                    color = instruction.color.value.toLong(16),
+                    width = instruction.width.value.extractValue(floatVariableStates, onError),
+                    height = instruction.height.value.extractValue(floatVariableStates, onError),
+                    cornerRadius = instruction.cornerRadius.value.extractValue(floatVariableStates, onError),
+                    rotation = instruction.rotation.value.extractValue(floatVariableStates, onError),
+                    scale = instruction.scaleField.value.extractValue(floatVariableStates, onError),
+                    x = instruction.x.value.extractValue(floatVariableStates, onError),
+                    y = instruction.y.value.extractValue(floatVariableStates, onError)
+                )
             }
-        }
 
-        is Instruction.Variables.ChangeFloat -> {
-            val floatName = instruction.nameField.value
-            val floatVariable = floatVariableStates[floatName] ?: error(UNDEFINED_VARIABLE.format(floatName))
+            is Instruction.Visuals.DrawLine -> {
 
-            val duration = instruction.durationField.value.toInt()
-            val newValue = floatVariable.floatValue + instruction.deltaField.value.toFloat()
-            if (duration == 0) {
-                floatVariableStates[floatName]!!.floatValue += newValue
-            } else {
+                lines[UUID.randomUUID().toString().take(10)] = UiLine(
+                    startX = instruction.startX.value.extractValue(floatVariableStates, onError),
+                    startY = instruction.startY.value.extractValue(floatVariableStates, onError),
+                    endX = instruction.endX.value.extractValue(floatVariableStates, onError),
+                    endY = instruction.endY.value.extractValue(floatVariableStates, onError),
+                    thickness = instruction.thickness.value.extractValue(floatVariableStates, onError),
+                    color = instruction.color.value.toLong(16),
+                )
+            }
+
+            is Instruction.Variables.DefineFloat -> {
+                val floatName = instruction.nameField.value
+                if (floatVariableStates.contains(floatName)) {
+                    floatVariableStates[floatName]?.floatValue =
+                        instruction.valueField.value.toFloat()
+                } else {
+                    floatVariableStates[instruction.nameField.value] =
+                        mutableFloatStateOf(instruction.valueField.value.toFloat())
+                }
+            }
+
+            is Instruction.Variables.ChangeFloat -> {
+                val floatName = instruction.nameField.value
+                val floatVariable =
+                    floatVariableStates[floatName] ?: error(UNDEFINED_VARIABLE.format(floatName))
+
+                val duration = instruction.durationField.value.toInt()
+                val newValue = floatVariable.floatValue + instruction.deltaField.value.toFloat()
+                if (duration == 0) {
+                    floatVariableStates[floatName]!!.floatValue += newValue
+                } else {
+                    animate(
+                        initialValue = floatVariable.floatValue,
+                        targetValue = newValue,
+                        animationSpec = tween(durationMillis = duration, easing = LinearEasing)
+                    ) { value, _ ->
+                        floatVariable.floatValue = value
+                    }
+                }
+            }
+
+            is Instruction.Animations.AnimateFloat -> {
+                val floatName = instruction.nameField.value
+                val floatVariable =
+                    floatVariableStates[floatName] ?: error(UNDEFINED_VARIABLE.format(floatName))
                 animate(
                     initialValue = floatVariable.floatValue,
-                    targetValue = newValue,
-                    animationSpec = tween(durationMillis = duration, easing = LinearEasing)
+                    targetValue = instruction.valueField.value.toFloat(),
+                    animationSpec = tween(
+                        durationMillis = instruction.durationField.value.toInt(),
+                        easing = LinearEasing
+                    )
                 ) { value, _ ->
                     floatVariable.floatValue = value
                 }
             }
-        }
 
-        is Instruction.Animations.AnimateFloat -> {
-            val floatName = instruction.nameField.value
-            val floatVariable = floatVariableStates[floatName] ?: error(UNDEFINED_VARIABLE.format(floatName))
-            animate(
-                initialValue = floatVariable.floatValue,
-                targetValue = instruction.valueField.value.toFloat(),
-                animationSpec = tween(durationMillis = instruction.durationField.value.toInt(), easing = LinearEasing)
-            ) { value, _ ->
-                floatVariable.floatValue = value
+            is Instruction.Controls.Wait -> {
+                delay(instruction.durationField.value.toLong())
             }
+
         }
 
-        is Instruction.Controls.Wait -> {
-            delay(instruction.durationField.value.toLong())
-        }
-
+    } catch (e: Exception) {
+        println("e2: ${e.stackTraceToString()}")
     }
 }
 
@@ -290,7 +329,10 @@ suspend fun handleSingleInstruction(
 private fun OutputScreenPrev() {
     Column {
         OutputScreen(
-            mainInstructionGroup = InstructionBlock.InstructionGroup(parentId = "", metaData = InstructionGroupMetaData.Thread),
+            mainInstructionGroup = InstructionBlock.InstructionGroup(
+                parentId = "",
+                metaData = InstructionGroupMetaData.Thread
+            ),
             onFinish = {}, onDrag = {}, onError = {}
         )
     }

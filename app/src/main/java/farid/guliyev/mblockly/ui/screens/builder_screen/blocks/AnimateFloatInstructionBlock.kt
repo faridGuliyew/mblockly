@@ -15,49 +15,26 @@ import farid.guliyev.mblockly.ui.components.InstructionField
 @Composable
 fun AnimateFloatInstructionBlock(
     instruction: InstructionRuntime.Animations.AnimateFloat,
-    index: Int,
-    isMinimized: Boolean,
     onEditInstruction: (InstructionRuntime.Animations.AnimateFloat) -> Unit,
-    onRemoveInstruction: () -> Unit,
-    onAddInstructionField: () -> Unit,
-    onToggleMinimize: () -> Unit,
-    onDuplicate: () -> Unit,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    onMoveOut: () -> Unit,
-    onMoveIn: () -> Unit,
 ) {
-    SingleInstructionContainer (
-        index = index,
-        type = instruction.base.type,
-        isMinimized = isMinimized,
-        onRemove = onRemoveInstruction,
-        onMoveDown = onMoveDown,
-        onMoveUp = onMoveUp,
-        onToggleMinimize = onToggleMinimize,
-        onMoveOut = onMoveOut,
-        onMoveIn = onMoveIn,
-        onDuplicate = onDuplicate
+    // Inputs row
+    FlowRow(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Inputs row
-        FlowRow(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            InstructionField(
-                instructionField = instruction.nameField,
-                onValueChanged = onEditInstruction
-            )
+        InstructionField(
+            instructionField = instruction.nameField,
+            onValueChanged = onEditInstruction
+        )
 
-            InstructionField(
-                instructionField = instruction.valueField,
-                onValueChanged = onEditInstruction
-            )
+        InstructionField(
+            instructionField = instruction.valueField,
+            onValueChanged = onEditInstruction
+        )
 
-            InstructionField(
-                instructionField = instruction.durationField,
-                onValueChanged = onEditInstruction
-            )
-        }
+        InstructionField(
+            instructionField = instruction.durationField,
+            onValueChanged = onEditInstruction
+        )
     }
 }

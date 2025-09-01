@@ -19,78 +19,56 @@ import farid.guliyev.mblockly.ui.components.OptionalInstructionField
 @Composable
 fun DrawLineInstructionBlock(
     instruction: InstructionRuntime.Visuals.DrawLine,
-    index: Int,
-    isMinimized: Boolean,
     onEditInstruction: (InstructionRuntime.Visuals.DrawLine) -> Unit,
-    onToggleMinimize: () -> Unit,
-    onRemoveInstruction: () -> Unit,
-    onAddInstructionField: () -> Unit,
-    onDuplicate: () -> Unit,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    onMoveOut: () -> Unit,
-    onMoveIn: () -> Unit,
+    onAddInstructionField: () -> Unit
 ) {
-    SingleInstructionContainer(
-        index = index,
-        type = instruction.base.type,
-        onRemove = onRemoveInstruction,
-        onMoveDown = onMoveDown,
-        onMoveUp = onMoveUp,
-        onMoveOut = onMoveOut,
-        onMoveIn = onMoveIn,
-        isMinimized = isMinimized,
-        onToggleMinimize = onToggleMinimize,
-        onDuplicate = onDuplicate
+    FlowRow(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        FlowRow(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            InstructionField(
-                instructionField = instruction.startX,
-                onValueChanged = onEditInstruction
-            )
+        InstructionField(
+            instructionField = instruction.startX,
+            onValueChanged = onEditInstruction
+        )
 
-            InstructionField(
-                instructionField = instruction.startY,
-                onValueChanged = onEditInstruction
-            )
+        InstructionField(
+            instructionField = instruction.startY,
+            onValueChanged = onEditInstruction
+        )
 
-            InstructionField(
-                instructionField = instruction.endX,
-                onValueChanged = onEditInstruction
-            )
+        InstructionField(
+            instructionField = instruction.endX,
+            onValueChanged = onEditInstruction
+        )
 
-            InstructionField(
-                instructionField = instruction.endY,
-                onValueChanged = onEditInstruction
-            )
+        InstructionField(
+            instructionField = instruction.endY,
+            onValueChanged = onEditInstruction
+        )
 
-            // === Optional fields ===
-            OptionalInstructionField(
-                enabledOptionalFields = instruction.base.enabledOptionalFields,
-                optionalField = Instruction.Visuals.DrawLine.OptionalFields.THICKNESS_FIELD,
-                name = { it.name },
-                instruction = instruction,
-                instructionField = instruction.thickness,
-                onValueChanged = onEditInstruction,
-                onDisable = onEditInstruction
-            )
-            OptionalInstructionField(
-                enabledOptionalFields = instruction.base.enabledOptionalFields,
-                optionalField = Instruction.Visuals.DrawLine.OptionalFields.COLOR_FIELD,
-                name = { it.name },
-                instruction = instruction,
-                instructionField = instruction.color,
-                onValueChanged = onEditInstruction,
-                onDisable = onEditInstruction
-            )
+        // === Optional fields ===
+        OptionalInstructionField(
+            enabledOptionalFields = instruction.base.enabledOptionalFields,
+            optionalField = Instruction.Visuals.DrawLine.OptionalFields.THICKNESS_FIELD,
+            name = { it.name },
+            instruction = instruction,
+            instructionField = instruction.thickness,
+            onValueChanged = onEditInstruction,
+            onDisable = onEditInstruction
+        )
+        OptionalInstructionField(
+            enabledOptionalFields = instruction.base.enabledOptionalFields,
+            optionalField = Instruction.Visuals.DrawLine.OptionalFields.COLOR_FIELD,
+            name = { it.name },
+            instruction = instruction,
+            instructionField = instruction.color,
+            onValueChanged = onEditInstruction,
+            onDisable = onEditInstruction
+        )
 
-            // Add button if not all optional fields are enabled
-            if (instruction.base.enabledOptionalFields.size < Instruction.Visuals.DrawLine.OptionalFields.entries.size) {
-                EnableInstructionFieldsButton(onClick = onAddInstructionField)
-            }
+        // Add button if not all optional fields are enabled
+        if (instruction.base.enabledOptionalFields.size < Instruction.Visuals.DrawLine.OptionalFields.entries.size) {
+            EnableInstructionFieldsButton(onClick = onAddInstructionField)
         }
     }
 }
@@ -100,16 +78,7 @@ fun DrawLineInstructionBlock(
 private fun DrawLineBlockPreview() {
     DrawLineInstructionBlock(
         instruction = InstructionRuntime.Visuals.DrawLine(Instruction.Visuals.DrawLine()),
-        index = 0,
-        isMinimized = false,
         onEditInstruction = {},
-        onRemoveInstruction = {},
-        onMoveDown = {},
-        onMoveUp = {},
-        onAddInstructionField = {},
-        onToggleMinimize = {},
-        onMoveOut = {},
-        onMoveIn = {},
-        onDuplicate = {}
+        onAddInstructionField = {}
     )
 }

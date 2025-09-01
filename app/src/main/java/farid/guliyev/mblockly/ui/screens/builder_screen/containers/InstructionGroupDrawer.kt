@@ -23,6 +23,7 @@ import farid.guliyev.mblockly.ui.components.CustomTextFieldContainer
 import farid.guliyev.mblockly.ui.components.CustomTextFieldWithValidator
 import farid.guliyev.mblockly.ui.components.FloatValidator
 import farid.guliyev.mblockly.ui.components.InstructionContainer
+import farid.guliyev.mblockly.ui.components.StringValidator
 import farid.guliyev.mblockly.ui.components.button.AddInstructionButton
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionBlockDrawer
@@ -98,6 +99,29 @@ fun InstructionGroupDrawer(
                                 onValueChange = {
                                     onUpdateInstruction(index, block.copy(metaData = metadata.copy(loopCount = it)))
                                 }, validator = FloatValidator
+                            )
+                        }
+                        HorizontalDivider(
+                            thickness = 2.dp,
+                            color = SurfacePrimary.copy(0.4F)
+                        )
+                    }
+                    is InstructionGroupMetaData.Conditional -> {
+                        CustomTextFieldContainer(
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "Condition",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = NeutralGray700 //if (isInputValid) NeutralGray700 else ErrorRed
+                            )
+
+                            CustomTextFieldWithValidator(
+                                originalValue = metadata.condition,
+                                onValueChange = {
+                                    onUpdateInstruction(index, block.copy(metaData = metadata.copy(condition = it)))
+                                }, validator = StringValidator
                             )
                         }
                         HorizontalDivider(
