@@ -19,21 +19,28 @@ import farid.guliyev.mblockly.domain.model.instruction.init
 import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import farid.guliyev.mblockly.ui.navigation.BuilderRoute
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import kotlin.time.Duration.Companion.minutes
 
 class BuilderViewModel (
     savedStateHandle: SavedStateHandle
 ) : BaseViewModel() {
 
     private val navigationController: NavigationController = NavigationModule.navController
+    var context: Context? = null
 
     companion object {
         const val ROOT = "ROOT"
         const val MAIN_GROUP_NAME = "MAIN"
+
+        const val RECENT_PROJECT_FILE_NAME = "most_recent_project.mb"
 
         val initialGroup get() = InstructionBlock.InstructionGroup(id = MAIN_GROUP_NAME, parentId = ROOT, metaData = InstructionGroupMetaData.Thread)
     }
@@ -203,6 +210,9 @@ class BuilderViewModel (
     /** Below functions primarily interact with subState. MAY OR MAY NOT interact with main state */
 
     /** Below functions do not interact with state at all */
+    init {
+        saveFilePeriodically()
+    }
     fun saveToFile(context: Context, fileName: String) {
         runSafelyInBg {
             val file = File(context.filesDir, "$fileName.mb")
@@ -240,11 +250,24 @@ class BuilderViewModel (
         file.outputStream().buffered().use { it.write(json.toByteArray()) }
     }
 
-    fun goBack(context: Context) {
+    fun goBack() {
         runSafelyInBg {
-            val file = File(context.filesDir, "most_recent_project.mb")
+            val file = File(context!!.filesDir, RECENT_PROJECT_FILE_NAME)
             saveCurrentStateToFile(file)
             navigationController.sendCommand { popBackStack() }
         }
+    }
+
+    fun saveFilePeriodically() {
+        runSafelyInBg {
+            while (true) {
+                delay(1.minutes)
+                saveCurrentStateToFile(File(context!!.filesDir, RECENT_PROJECT_FILE_NAME))
+            }
+        }
+    }
+
+    override fun onCleared() {
+        context = null
     }
 }

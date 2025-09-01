@@ -19,15 +19,14 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
@@ -43,6 +42,7 @@ import farid.guliyev.mblockly.ui.screens.output_screen.components.OutputTopBar
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -216,8 +216,25 @@ suspend fun handleInstructionGroup(
                             }
 
                             is InstructionGroupMetaData.Conditional -> {
-                                val condition = block.metaData.condition
-                                error("Conditional block are not yet supported!")
+                                val condition = block.metaData.condition.extractBooleanValue(
+                                    floatVariables = floatVariableStates,
+                                    onError = onError
+                                )
+
+                                snapshotFlow { condition.value }
+                                    .collect { isSatisfied->
+                                        if (!isSatisfied) {
+                                            // Clean up
+                                        } else {
+                                            handleInstructionGroup(
+                                                group = block,
+                                                shapes = shapes,
+                                                floatVariableStates = floatVariableStates,
+                                                lines = lines,
+                                                onError = onError
+                                            )
+                                        }
+                                    }
                             }
                         }
                     }
@@ -244,24 +261,24 @@ suspend fun handleSingleInstruction(
 
                 shapes[instruction.name.value] = UiShape(
                     color = instruction.color.value.toLong(16),
-                    width = instruction.width.value.extractValue(floatVariableStates, onError),
-                    height = instruction.height.value.extractValue(floatVariableStates, onError),
-                    cornerRadius = instruction.cornerRadius.value.extractValue(floatVariableStates, onError),
-                    rotation = instruction.rotation.value.extractValue(floatVariableStates, onError),
-                    scale = instruction.scaleField.value.extractValue(floatVariableStates, onError),
-                    x = instruction.x.value.extractValue(floatVariableStates, onError),
-                    y = instruction.y.value.extractValue(floatVariableStates, onError)
+                    width = instruction.width.value.extractFloatValue(floatVariableStates, onError),
+                    height = instruction.height.value.extractFloatValue(floatVariableStates, onError),
+                    cornerRadius = instruction.cornerRadius.value.extractFloatValue(floatVariableStates, onError),
+                    rotation = instruction.rotation.value.extractFloatValue(floatVariableStates, onError),
+                    scale = instruction.scaleField.value.extractFloatValue(floatVariableStates, onError),
+                    x = instruction.x.value.extractFloatValue(floatVariableStates, onError),
+                    y = instruction.y.value.extractFloatValue(floatVariableStates, onError)
                 )
             }
 
             is Instruction.Visuals.DrawLine -> {
 
                 lines[UUID.randomUUID().toString().take(10)] = UiLine(
-                    startX = instruction.startX.value.extractValue(floatVariableStates, onError),
-                    startY = instruction.startY.value.extractValue(floatVariableStates, onError),
-                    endX = instruction.endX.value.extractValue(floatVariableStates, onError),
-                    endY = instruction.endY.value.extractValue(floatVariableStates, onError),
-                    thickness = instruction.thickness.value.extractValue(floatVariableStates, onError),
+                    startX = instruction.startX.value.extractFloatValue(floatVariableStates, onError),
+                    startY = instruction.startY.value.extractFloatValue(floatVariableStates, onError),
+                    endX = instruction.endX.value.extractFloatValue(floatVariableStates, onError),
+                    endY = instruction.endY.value.extractFloatValue(floatVariableStates, onError),
+                    thickness = instruction.thickness.value.extractFloatValue(floatVariableStates, onError),
                     color = instruction.color.value.toLong(16),
                 )
             }

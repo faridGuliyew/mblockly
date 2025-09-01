@@ -62,7 +62,7 @@ fun InstructionGroupDrawer(
         onMoveIn =  { onMoveIn(index, block) },
         onToggleMinimize = { onUpdateInstruction(index, block.copy(isMinimized = !block.isMinimized)) },
         onEditSeparately = { onEnableFocusModeForGroup(index, block) },
-        onDuplicate = { onDuplicate(index, block) },
+//        onDuplicate = { onDuplicate(index, block) },
         backgroundColor = AccentEmerald.copy(alpha = 0.1f),
         borderColor = AccentEmerald,
         innerPadding = PaddingValues(8.dp),

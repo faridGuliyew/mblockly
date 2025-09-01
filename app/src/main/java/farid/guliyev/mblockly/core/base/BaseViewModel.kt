@@ -76,6 +76,8 @@ abstract class BaseViewModel : ViewModel() {
         return try {
             operation()
         } catch (e: Exception) {
+            if (e.message == "Job was cancelled") return null
+
             CommsModule.alertChannel.sendException(e)
             null
         }

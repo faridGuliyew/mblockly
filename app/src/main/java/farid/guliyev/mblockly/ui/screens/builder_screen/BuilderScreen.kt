@@ -67,7 +67,7 @@ fun BuilderScreen(
                 enableFieldList = subState.enableOptionalFieldList,
                 onEnableField = viewModel::enableInstructionOptionalField,
                 onShare = viewModel::showShareSheet,
-                onBack = { viewModel.goBack(context) },
+                onBack = viewModel::goBack,
                 onExecute = {
                     scope.launch {
                         isRunning = false

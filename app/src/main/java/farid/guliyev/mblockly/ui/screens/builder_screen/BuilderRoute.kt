@@ -3,6 +3,7 @@ package farid.guliyev.mblockly.ui.screens.builder_screen
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
@@ -18,11 +19,12 @@ fun BuilderRoute() {
 
     val context = LocalContext.current
     val viewModel = viewModel<BuilderViewModel>()
+    LaunchedEffect(Unit) { viewModel.context = context }
 
     val state by viewModel.state.collectAsStateWithLifecycle()
     val subState by viewModel.subState.collectAsStateWithLifecycle()
 
-    BackHandler { viewModel.goBack(context) }
+    BackHandler { viewModel.goBack() }
 
     BuilderScreen(
         viewModel = viewModel,
