@@ -150,6 +150,9 @@ fun BuilderScreen(
                     onFinish = {
                         isRunning = false
                     },
+                    getParent = {
+                        with(viewModel) { it.getParent() }
+                    },
                     onError = {
                         viewModel.showErrorAlert(it)
                         isRunning = false

@@ -156,7 +156,7 @@ class BuilderViewModel (
     }
 
     @Throws(AppException::class)
-    private fun InstructionBlock.getParent() : InstructionBlock.InstructionGroup {
+    fun InstructionBlock.getParent() : InstructionBlock.InstructionGroup {
         val parent = instructionGroupsById[parentId] ?: failGracefully(message = NO_SUCH_PARENT_WITH_GROUP_ID.format(parentId))
         return parent
     }
