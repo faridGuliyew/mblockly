@@ -13,6 +13,7 @@ import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.ChangeFloatInstru
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DefineFloatInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawLineInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawShapeInstructionBlock
+import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawTextInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.WaitInstructionBlock
 
 @Composable
@@ -53,6 +54,13 @@ fun SingleInstructionDrawer(
             }
             is InstructionRuntime.Visuals.DrawLine -> {
                 DrawLineInstructionBlock(
+                    instruction = instruction,
+                    onEditInstruction = onEditInstruction,
+                    onAddInstructionField = onAddInstructionField
+                )
+            }
+            is InstructionRuntime.Visuals.DrawText -> {
+                DrawTextInstructionBlock(
                     instruction = instruction,
                     onEditInstruction = onEditInstruction,
                     onAddInstructionField = onAddInstructionField

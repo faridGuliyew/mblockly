@@ -164,6 +164,34 @@ sealed interface InstructionRuntime {
                 onEdit = { v -> DrawLine(base.updateField(thickness = v)) }
             )
         }
+
+        class DrawText(override val base: Instruction.Visuals.DrawText = Instruction.Visuals.DrawText()) : Visuals {
+            val text = InstructionField<String, DrawText>(
+                base.text,
+                validator = StringValidator,
+                onEdit = { v -> DrawText(base.updateField(text = v)) }
+            )
+            val x = InstructionField<Float, DrawText>(
+                base.x,
+                validator = StringValidator,
+                onEdit = { v -> DrawText(base.updateField(x = v)) }
+            )
+            val y = InstructionField<Float, DrawText>(
+                base.y,
+                validator = StringValidator,
+                onEdit = { v -> DrawText(base.updateField(y = v)) }
+            )
+            val color = InstructionField<String, DrawText>(
+                base.color,
+                validator = ColorValidator,
+                onEdit = { v -> DrawText(base.updateField(color = v)) }
+            )
+            val fontSize = InstructionField<Float, DrawText>(
+                base.fontSize,
+                validator = StringValidator,
+                onEdit = { v -> DrawText(base.updateField(fontSize = v)) }
+            )
+        }
     }
 }
 
@@ -413,6 +441,34 @@ sealed interface Instruction {
                 return InstructionRuntime.Visuals.DrawLine(this)
             }
         }
+
+        @Serializable
+        data class DrawText(
+            val text: InstructionFieldData = InstructionFieldData("Text", "Hello MBlockly!"),
+            val x: InstructionFieldData = InstructionFieldData("X", "0.0"),
+            val y: InstructionFieldData = InstructionFieldData("Y", "0.0"),
+            val color: InstructionFieldData = InstructionFieldData("Color", "FF000000"),
+            val fontSize: InstructionFieldData = InstructionFieldData("Font Size", "16.0"),
+        ) : Visuals {
+
+            fun updateField(
+                text: String = this.text.value,
+                x: String = this.x.value,
+                y: String = this.y.value,
+                color: String = this.color.value,
+                fontSize: String = this.fontSize.value
+            ): DrawText = DrawText(
+                text = this.text.copy(value = text),
+                x = this.x.copy(value = x),
+                y = this.y.copy(value = y),
+                color = this.color.copy(value = color),
+                fontSize = this.fontSize.copy(value = fontSize)
+            )
+
+            override fun buildRuntime(): InstructionRuntime {
+                return InstructionRuntime.Visuals.DrawText(this)
+            }
+        }
     }
 }
 
@@ -431,6 +487,7 @@ val Instruction.type
             when (this) {
                 is Instruction.Visuals.DrawShape -> SingleInstructionType.DRAW_SHAPE
                 is Instruction.Visuals.DrawLine -> SingleInstructionType.DRAW_LINE
+                is Instruction.Visuals.DrawText -> SingleInstructionType.DRAW_TEXT
             }
         }
 
@@ -453,6 +510,7 @@ val Instruction.optionalFields: List<String>
             when (this) {
                 is Instruction.Visuals.DrawShape -> Instruction.Visuals.DrawShape.OptionalFields.entries.map { it.name }
                 is Instruction.Visuals.DrawLine -> Instruction.Visuals.DrawLine.OptionalFields.entries.map { it.name }
+                is Instruction.Visuals.DrawText -> emptyList()
             }
         }
         is Instruction.Variables -> when (this) {
@@ -471,6 +529,7 @@ enum class SingleInstructionType(val description: String, val label: String = ""
     ANIMATE_FLOAT(description = "🤸‍♀️ Animate FLOAT", label = "Animate float"),
     DRAW_SHAPE(description = "📐 Draw a shape", label = "Draw shape"),
     DRAW_LINE("📏 Draw a line", "Draw line"),
+    DRAW_TEXT(description = "🔤 Draw text", label = "Draw text"),
     WAIT(description = "😴 Wait", label = "Wait")
 }
 
@@ -482,6 +541,7 @@ fun SingleInstructionType.init(): InstructionRuntime {
         SingleInstructionType.CHANGE_FLOAT -> InstructionRuntime.Variables.ChangeFloat()
         SingleInstructionType.DRAW_SHAPE -> InstructionRuntime.Visuals.DrawShape()
         SingleInstructionType.DRAW_LINE -> InstructionRuntime.Visuals.DrawLine()
+        SingleInstructionType.DRAW_TEXT -> InstructionRuntime.Visuals.DrawText()
         SingleInstructionType.ANIMATE_FLOAT -> InstructionRuntime.Animations.AnimateFloat()
         SingleInstructionType.WAIT -> InstructionRuntime.Controls.Wait()
     }

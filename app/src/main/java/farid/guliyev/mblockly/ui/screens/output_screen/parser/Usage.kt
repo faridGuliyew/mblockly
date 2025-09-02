@@ -1,7 +1,7 @@
 package farid.guliyev.mblockly.ui.screens.output_screen.parser
 
 fun main() {
-    val input = "2.5 == 2.5" //"value1 + var2 * var2 - 123 / var3"
+    val input = "Health \$health" //"value1 + var2 * var2 - 123 / var3"
     val lexer = Lexer(input)
     println(lexer.tokens)
     val expression = lexer.parseExpression()

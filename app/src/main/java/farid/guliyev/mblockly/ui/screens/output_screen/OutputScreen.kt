@@ -29,6 +29,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,6 +39,7 @@ import farid.guliyev.mblockly.domain.UNDEFINED_VARIABLE
 import farid.guliyev.mblockly.domain.model.instruction.Instruction
 import farid.guliyev.mblockly.ui.model.UiLine
 import farid.guliyev.mblockly.ui.model.UiShape
+import farid.guliyev.mblockly.ui.model.UiText
 import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderViewModel.Companion.MAIN_GROUP_NAME
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupMetaData
@@ -64,6 +66,9 @@ fun ColumnScope.OutputScreen(
     val scopedLines = remember { mutableStateMapOf<String, SnapshotStateMap<String, UiLine>>(
         MAIN_GROUP_NAME to mutableStateMapOf()
     ) }
+    val scopedTexts = remember { mutableStateMapOf<String, SnapshotStateMap<String, UiText>>(
+        MAIN_GROUP_NAME to mutableStateMapOf()
+    ) }
 
     val scopedFloatVariableStates = remember { mutableStateMapOf<String, SnapshotStateMap<String, MutableFloatState>>(
         MAIN_GROUP_NAME to mutableStateMapOf()
@@ -76,6 +81,7 @@ fun ColumnScope.OutputScreen(
                 shapes = scopedShapes,
                 allScopedFloatVariableStates = scopedFloatVariableStates,
                 lines = scopedLines,
+                texts = scopedTexts,
                 getParent = getParent,
                 onError = onError
             )
@@ -153,6 +159,24 @@ fun ColumnScope.OutputScreen(
                     }
                 }
             }
+
+            // DRAW TEXTS
+            scopedTexts.values.forEach { texts ->
+                texts.values.forEach { text ->
+                    Canvas(modifier = Modifier) {
+                        drawContext.canvas.nativeCanvas.drawText(
+                            text.text,
+                            text.x.value,
+                            text.y.value + text.fontSize.value,
+                            android.graphics.Paint().apply {
+                                color = text.color.toInt()
+                                textSize = text.fontSize.value
+                                isAntiAlias = true
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -161,6 +185,7 @@ suspend fun handleInstructionGroup(
     group: InstructionBlock.InstructionGroup,
     shapes: SnapshotStateMap<String, SnapshotStateMap<String, UiShape>>,
     lines: SnapshotStateMap<String, SnapshotStateMap<String, UiLine>>,
+    texts: SnapshotStateMap<String, SnapshotStateMap<String, UiText>>,
     allScopedFloatVariableStates: SnapshotStateMap<String, SnapshotStateMap<String, MutableFloatState>>,
     getParent: (InstructionBlock) -> InstructionBlock.InstructionGroup,
     onError: (Exception) -> Unit
@@ -177,6 +202,7 @@ suspend fun handleInstructionGroup(
                             lines = lines,
                             allScopedFloatVariableStates = allScopedFloatVariableStates,
                             parent = parent,
+                            texts = texts,
                             onError = onError
                         )
                         return@forEach
@@ -191,6 +217,7 @@ suspend fun handleInstructionGroup(
                         }
                         shapes[block.id] = SnapshotStateMap<String, UiShape>().apply { putAll(shapes[parent.id]!!) }
                         lines[block.id] = SnapshotStateMap<String, UiLine>().apply { putAll(lines[parent.id]!!) }
+                        texts[block.id] = SnapshotStateMap<String, UiText>().apply { putAll(texts[parent.id]!!) }
 
                         val floatVariableStates = allScopedFloatVariableStates[block.id]!!
 
@@ -198,6 +225,7 @@ suspend fun handleInstructionGroup(
                             allScopedFloatVariableStates.remove(block.id)
                             shapes.remove(block.id)
                             lines.remove(block.id)
+                            texts.remove(block.id)
                         }
 
                         when (val metadata = block.metaData) {
@@ -207,6 +235,7 @@ suspend fun handleInstructionGroup(
                                         group = block,
                                         shapes = shapes,
                                         lines = lines,
+                                        texts = texts,
                                         allScopedFloatVariableStates = allScopedFloatVariableStates,
                                         onError = onError,
                                         getParent = getParent
@@ -231,6 +260,7 @@ suspend fun handleInstructionGroup(
                                         shapes = shapes,
                                         allScopedFloatVariableStates = allScopedFloatVariableStates,
                                         lines = lines,
+                                        texts = texts,
                                         getParent = getParent,
                                         onError = onError
                                     )
@@ -250,6 +280,7 @@ suspend fun handleInstructionGroup(
                                         shapes = shapes,
                                         allScopedFloatVariableStates = allScopedFloatVariableStates,
                                         lines = lines,
+                                        texts = texts,
                                         getParent = getParent,
                                         onError = onError
                                     )
@@ -278,6 +309,7 @@ suspend fun handleInstructionGroup(
                                                 shapes = shapes,
                                                 allScopedFloatVariableStates = allScopedFloatVariableStates,
                                                 lines = lines,
+                                                texts = texts,
                                                 getParent = getParent,
                                                 onError = onError
                                             )
@@ -308,19 +340,19 @@ suspend fun handleSingleInstruction(
     instruction: Instruction,
     shapes: SnapshotStateMap<String, SnapshotStateMap<String, UiShape>>,
     lines: SnapshotStateMap<String, SnapshotStateMap<String, UiLine>>,
+    texts: SnapshotStateMap<String, SnapshotStateMap<String, UiText>>,
     allScopedFloatVariableStates: SnapshotStateMap<String, SnapshotStateMap<String, MutableFloatState>>,
     parent: InstructionBlock.InstructionGroup,
     onError: (Exception) -> Unit
 ) {
     try {
         val floatVariableStates = allScopedFloatVariableStates.getOrCreate(parent.id)
-        val shapeStates = shapes.getOrCreate(parent.id)
-        val lineStates = lines.getOrCreate(parent.id)
 
         when (instruction) {
             is Instruction.Variables.DefineInteger -> TODO()
             is Instruction.Variables.DefineString -> TODO()
             is Instruction.Visuals.DrawShape -> {
+                val shapeStates = shapes.getOrCreate(parent.id)
                 shapeStates[instruction.name.value] = UiShape(
                     color = instruction.color.value.toLong(16),
                     width = instruction.width.value.extractFloatValue(floatVariableStates, onError),
@@ -334,7 +366,7 @@ suspend fun handleSingleInstruction(
             }
 
             is Instruction.Visuals.DrawLine -> {
-
+                val lineStates = lines.getOrCreate(parent.id)
                 lineStates[UUID.randomUUID().toString().take(10)] = UiLine(
                     startX = instruction.startX.value.extractFloatValue(floatVariableStates, onError),
                     startY = instruction.startY.value.extractFloatValue(floatVariableStates, onError),
@@ -344,6 +376,18 @@ suspend fun handleSingleInstruction(
                     color = instruction.color.value.toLong(16),
                 )
             }
+
+            is Instruction.Visuals.DrawText -> {
+                val textStates = texts.getOrCreate(parent.id)
+                textStates[UUID.randomUUID().toString().take(10)] = UiText(
+                    text = instruction.text.value,
+                    x = instruction.x.value.extractFloatValue(floatVariableStates, onError),
+                    y = instruction.y.value.extractFloatValue(floatVariableStates, onError),
+                    color = instruction.color.value.toLong(16),
+                    fontSize = instruction.fontSize.value.extractFloatValue(floatVariableStates, onError)
+                )
+            }
+
 
             is Instruction.Variables.DefineFloat -> {
                 val floatName = instruction.nameField.value
