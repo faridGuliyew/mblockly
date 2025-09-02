@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -29,7 +30,9 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -47,6 +50,7 @@ fun InstructionContainer(
     label: String,
     index: Int,
     isMinimized: Boolean,
+    isActive: Boolean,
     onRemove: () -> Unit,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
@@ -55,6 +59,7 @@ fun InstructionContainer(
     onToggleMinimize: () -> Unit,
     onDuplicate: (() -> Unit)? = null,
     onEditSeparately: (() -> Unit)? = null,
+    onToggleActive: () -> Unit,
     borderColor: Color = PrimaryBlue,
     backgroundColor: Color = BackgroundSecondary,
     innerPadding: PaddingValues = PaddingValues(16.dp),
@@ -93,7 +98,10 @@ fun InstructionContainer(
                     text = label,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = NeutralGray700
+                    color = NeutralGray700,
+                    style = TextStyle(
+                        textDecoration = if (!isActive) TextDecoration.LineThrough else null
+                    )
                 )
             }
             Row (horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -111,8 +119,6 @@ fun InstructionContainer(
                     icon = Icons.Default.KeyboardArrowDown,
                     color = PrimaryBlue
                 )
-                // Remove button
-                AppIconButton(onClick = onRemove, icon = Icons.Default.Close, color = ErrorRed)
                 onDuplicate?.let {
                     // Minimize button
                     AppIconButton(onClick = onDuplicate, icon = ImageVector.vectorResource(R.drawable.ic_copy), color = NeutralGray700)
@@ -121,6 +127,11 @@ fun InstructionContainer(
                     // Edit separately button
                     AppIconButton(onClick = onEditSeparately, icon = Icons.Default.ExitToApp, color = SuccessGreen)
                 }
+                // Toggle isActive button
+                AppIconButton(onClick = onToggleActive, icon = Icons.Default.Build, color = NeutralGray700)
+
+                // Remove button
+                AppIconButton(onClick = onRemove, icon = Icons.Default.Close, color = ErrorRed)
             }
         }
 
@@ -144,8 +155,10 @@ private fun InstructionContainerPrev() {
         content = {},
         innerPadding = PaddingValues(vertical = 4.dp, horizontal = 2.dp),
         isMinimized = false,
+        isActive = false,
         onToggleMinimize = {},
-        onDuplicate = {}
+        onDuplicate = {},
+        onToggleActive = {}
 
     )
 }

@@ -8,6 +8,7 @@ import farid.guliyev.mblockly.ui.components.IntValidator
 import farid.guliyev.mblockly.ui.components.StringValidator
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionBlock
 import kotlinx.serialization.Serializable
+import java.util.UUID
 
 /** MAKE SURE For each Instruction, there is associated Instruction. Be careful here overall, do not mess it up :D */
 sealed interface InstructionRuntime {
@@ -278,13 +279,6 @@ sealed interface Instruction {
         }
 
         @Serializable
-        data class DefineInteger(val name: String = "integer", val value: Int = 0) : Variables {
-            override fun buildRuntime(): InstructionRuntime {
-                error("buildRuntime: $this")
-            }
-        }
-
-        @Serializable
         data class DefineFloat(
             val nameField: InstructionFieldData = InstructionFieldData("Name", "float"),
             val valueField: InstructionFieldData = InstructionFieldData("Value", "0.0"),
@@ -362,7 +356,7 @@ sealed interface Instruction {
     sealed interface Visuals : Instruction {
         @Serializable
         data class DrawShape(
-            val name: InstructionFieldData = InstructionFieldData("Name", "shape"),
+            val name: InstructionFieldData = InstructionFieldData("Name", UUID.randomUUID().toString().take(10)),
             val x: InstructionFieldData = InstructionFieldData("X", "0.0"),
             val y: InstructionFieldData = InstructionFieldData("Y", "0.0"),
             val width: InstructionFieldData = InstructionFieldData("Width", "200.0"),
@@ -375,7 +369,7 @@ sealed interface Instruction {
         ) : Visuals {
 
             enum class OptionalFields {
-                CORNER_RADIUS_FIELD, COLOR_FIELD, SCALE_FIELD, ROTATION
+                NAME_FIELD, CORNER_RADIUS_FIELD, COLOR_FIELD, SCALE_FIELD, ROTATION
             }
 
             fun updateField(
@@ -408,6 +402,7 @@ sealed interface Instruction {
                     OptionalFields.COLOR_FIELD -> updateField(color = "FF0000FF")
                     OptionalFields.SCALE_FIELD -> updateField(scale = "1")
                     OptionalFields.ROTATION -> updateField(rotation = "0.0")
+                    OptionalFields.NAME_FIELD -> updateField(name = UUID.randomUUID().toString().take(10))
                 }
 
             override fun buildRuntime(): InstructionRuntime {
@@ -517,7 +512,6 @@ val Instruction.type
         is Instruction.Variables -> {
             when (this) {
                 is Instruction.Variables.DefineString -> SingleInstructionType.SET_STRING
-                is Instruction.Variables.DefineInteger -> SingleInstructionType.SET_INTEGER
                 is DefineFloat -> SingleInstructionType.SET_FLOAT
                 is Instruction.Variables.ChangeFloat -> SingleInstructionType.CHANGE_FLOAT
             }
@@ -568,7 +562,6 @@ val Instruction.optionalFields: List<String>
 
 enum class SingleInstructionType(val description: String, val label: String = "") {
     SET_STRING(description = "💾 Set/create a variable of STRING type", label = "Set string"),
-    SET_INTEGER(description = "💾 Set/create a new variable of INTEGER type", label = "Set integer"),
     SET_FLOAT(description = "💾 Set/create a new variable of FLOAT type", label = "Set float"),
     CHANGE_FLOAT("➕ Change FLOAT by value", "Change float"),
     ANIMATE_FLOAT(description = "🤸‍♀️ Animate FLOAT", label = "Animate float"),
@@ -582,7 +575,6 @@ enum class SingleInstructionType(val description: String, val label: String = ""
 fun SingleInstructionType.init(): InstructionRuntime {
     return when (this) {
         SingleInstructionType.SET_STRING -> error("$this")
-        SingleInstructionType.SET_INTEGER -> error("$this")
         SingleInstructionType.SET_FLOAT -> InstructionRuntime.Variables.DefineFloat()
         SingleInstructionType.CHANGE_FLOAT -> InstructionRuntime.Variables.ChangeFloat()
         SingleInstructionType.DRAW_SHAPE -> InstructionRuntime.Visuals.DrawShape()

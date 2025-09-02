@@ -29,11 +29,6 @@ fun DrawShapeInstructionBlock(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         InstructionField(
-            instructionField = instruction.name,
-            onValueChanged = onEditInstruction
-        )
-
-        InstructionField(
             instructionField = instruction.width,
             onValueChanged = onEditInstruction
         )
@@ -54,6 +49,15 @@ fun DrawShapeInstructionBlock(
         )
 
         /** === Optional field visibility checks === */
+        OptionalInstructionField(
+            enabledOptionalFields = instruction.base.enabledOptionalFields,
+            optionalField = Instruction.Visuals.DrawShape.OptionalFields.NAME_FIELD,
+            name = { it.name },
+            instruction = instruction,
+            instructionField = instruction.name,
+            onValueChanged = onEditInstruction,
+            onDisable = onEditInstruction
+        )
         OptionalInstructionField(
             enabledOptionalFields = instruction.base.enabledOptionalFields,
             optionalField = CORNER_RADIUS_FIELD,

@@ -200,9 +200,11 @@ suspend fun handleInstructionGroup(
     coroutineScope {
         try {
             group.instructionBlocks.forEach { block ->
+                if (!block.isActive) return@forEach
+
                 when (block) {
                     is InstructionBlock.SingleInstruction -> {
-                        val parent = getParent(block) as InstructionBlock.InstructionGroup
+                        val parent = getParent(block)
                         handleSingleInstruction(
                             context = context,
                             instruction = block.instruction.base,
@@ -217,7 +219,7 @@ suspend fun handleInstructionGroup(
                     }
 
                     is InstructionBlock.InstructionGroup -> {
-                        val parent = getParent(block) as InstructionBlock.InstructionGroup
+                        val parent = getParent(block)
 
                         // We make a copy, so child only sees the current snapshot and nothing else
                         allScopedFloatVariableStates[block.id] = SnapshotStateMap<String, MutableFloatState>().apply {
@@ -362,7 +364,6 @@ suspend fun handleSingleInstruction(
         val floatVariableStates = allScopedFloatVariableStates.getOrCreate(parent.id)
 
         when (instruction) {
-            is Instruction.Variables.DefineInteger -> TODO()
             is Instruction.Variables.DefineString -> TODO()
             is Instruction.Visuals.DrawShape -> {
                 val shapeStates = shapes.getOrCreate(parent.id)

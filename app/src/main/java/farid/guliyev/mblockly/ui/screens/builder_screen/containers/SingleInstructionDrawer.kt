@@ -22,10 +22,12 @@ fun SingleInstructionDrawer(
     instruction: InstructionRuntime,
     index: Int,
     isMinimized : Boolean,
+    isActive : Boolean,
     onEditInstruction: (InstructionRuntime) -> Unit,
     onRemoveInstruction: () -> Unit,
     onAddInstructionField: () -> Unit,
     onToggleMinimize: () -> Unit,
+    onToggleActive: () -> Unit,
     onDuplicate: () -> Unit,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
@@ -41,7 +43,9 @@ fun SingleInstructionDrawer(
         onMoveOut = onMoveOut,
         onMoveIn = onMoveIn,
         isMinimized = isMinimized,
+        isActive = isActive,
         onToggleMinimize = onToggleMinimize,
+        onToggleActive = onToggleActive,
         onDuplicate = onDuplicate
     ) {
         // Your block content

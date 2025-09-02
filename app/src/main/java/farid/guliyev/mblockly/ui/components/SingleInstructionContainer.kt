@@ -12,6 +12,7 @@ import farid.guliyev.mblockly.domain.model.instruction.SingleInstructionType
 fun SingleInstructionContainer(
     type: SingleInstructionType,
     isMinimized: Boolean,
+    isActive: Boolean,
     index: Int,
     onRemove: () -> Unit,
     onMoveUp: () -> Unit,
@@ -19,12 +20,14 @@ fun SingleInstructionContainer(
     onMoveOut: () -> Unit,
     onMoveIn: () -> Unit,
     onToggleMinimize: () -> Unit,
+    onToggleActive: () -> Unit,
     onDuplicate: () -> Unit,
     content: @Composable () -> Unit
 ) {
     InstructionContainer(
         label = type.label,
-        isMinimized = isMinimized,
+        isMinimized = isMinimized || !isActive,
+        isActive = isActive,
         index = index,
         onRemove = onRemove,
         onMoveUp = onMoveUp,
@@ -32,6 +35,7 @@ fun SingleInstructionContainer(
         onMoveIn = onMoveIn,
         onMoveDown = onMoveDown,
         onToggleMinimize = onToggleMinimize,
+        onToggleActive = onToggleActive,
         onDuplicate = onDuplicate,
         content = {
             Spacer(modifier = Modifier.height(4.dp))
@@ -46,11 +50,13 @@ private fun SingleInstructionContainerPrev() {
     SingleInstructionContainer(
         type = SingleInstructionType.ANIMATE_FLOAT,
         isMinimized = false,
+        isActive = false,
         index = 1,
         onRemove = {},
         onMoveUp = {},
         onMoveDown = {},
         onToggleMinimize = {},
+        onToggleActive = {},
         content = {},
         onMoveIn = {},
         onMoveOut = {},

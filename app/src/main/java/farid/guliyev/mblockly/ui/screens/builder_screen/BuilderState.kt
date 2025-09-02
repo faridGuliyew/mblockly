@@ -38,6 +38,7 @@ data class BuilderSubState(
 sealed class InstructionBlock {
     abstract val parentId: String
     abstract val isMinimized: Boolean
+    abstract val isActive: Boolean
     abstract fun copy(parentId: String = this.parentId, isMinimized: Boolean = this.isMinimized) : InstructionBlock
 
     /** WARNING: Performance hit can be significant, if block is huge. */
@@ -68,7 +69,8 @@ sealed class InstructionBlock {
         @Serializable(with = InstructionRuntimeSerializer::class)
         val instruction: InstructionRuntime,
         override val parentId: String,
-        override val isMinimized: Boolean = false
+        override val isMinimized: Boolean = false,
+        override val isActive: Boolean = true
     ) : InstructionBlock() {
         override fun copy(parentId: String, isMinimized: Boolean) : SingleInstruction {
             return this.copy(instruction = instruction, parentId = parentId, isMinimized = isMinimized)
@@ -82,7 +84,8 @@ sealed class InstructionBlock {
         val id : String = UUID.randomUUID().toString(),
         val metaData: InstructionGroupMetaData,
         override val parentId: String,
-        override val isMinimized: Boolean = false
+        override val isMinimized: Boolean = false,
+        override val isActive: Boolean = true
     ) : InstructionBlock() {
         override fun copy(parentId: String, isMinimized: Boolean) : InstructionGroup {
             return this.copy(id = id, parentId = parentId, isMinimized = isMinimized)

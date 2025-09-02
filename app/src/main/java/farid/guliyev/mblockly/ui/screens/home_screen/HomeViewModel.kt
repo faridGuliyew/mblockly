@@ -34,7 +34,8 @@ class HomeViewModel(
 
     fun importFile(context: Context, uri: Uri?) {
         runSafelyInBg {
-            context.contentResolver.openInputStream(uri!!)!!.buffered().use { input ->
+            if (uri == null) failGracefully("No file selected")
+            context.contentResolver.openInputStream(uri)!!.buffered().use { input ->
                 val fileName = showInputConfirmation("How do you want to save this file?") + ".mb"
                 val destinationFile = File(context.filesDir, fileName).also { it.createNewFile() }
                 destinationFile.outputStream().buffered().use { out->

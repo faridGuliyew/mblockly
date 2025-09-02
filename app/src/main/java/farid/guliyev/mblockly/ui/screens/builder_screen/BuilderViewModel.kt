@@ -1,5 +1,6 @@
 package farid.guliyev.mblockly.ui.screens.builder_screen
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.SavedStateHandle
@@ -32,6 +33,7 @@ class BuilderViewModel (
 ) : BaseViewModel() {
 
     private val navigationController: NavigationController = NavigationModule.navController
+    @SuppressLint("StaticFieldLeak")
     var context: Context? = null
 
     companion object {
@@ -48,6 +50,10 @@ class BuilderViewModel (
     private val instructionGroupsById = mutableMapOf(MAIN_GROUP_NAME to state.value.mainInstructionGroup)
 
     val subState = MutableStateFlow(BuilderSubState())
+
+    init {
+        loadInstructionGroupsFromFileIfNeeded()
+    }
 
     /** ===== MAIN SECTION - Below functions only interact with state. NOT subState. ===== */
 
@@ -261,6 +267,17 @@ class BuilderViewModel (
             while (true) {
                 delay(1.minutes)
                 saveCurrentStateToFile(File(context!!.filesDir, RECENT_PROJECT_FILE_NAME))
+            }
+        }
+    }
+
+    fun loadInstructionGroupsFromFileIfNeeded() {
+        groupFromArgs?.let { group ->
+            group.instructionBlocks.forEach {
+                when (it) {
+                    is InstructionBlock.InstructionGroup -> { instructionGroupsById[it.id] = it }
+                    is InstructionBlock.SingleInstruction -> return@forEach
+                }
             }
         }
     }

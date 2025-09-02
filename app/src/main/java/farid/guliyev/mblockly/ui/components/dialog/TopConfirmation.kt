@@ -1,15 +1,11 @@
 package farid.guliyev.mblockly.ui.components.dialog
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -22,43 +18,27 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import farid.guliyev.mblockly.domain.model.Alert
-import farid.guliyev.mblockly.domain.model.AlertType
 import farid.guliyev.mblockly.ui.components.CustomTextField
-import farid.guliyev.mblockly.ui.components.button.AppIconButton
-import farid.guliyev.mblockly.ui.components.button.AppIconButtonBackgrounded
 import farid.guliyev.mblockly.ui.components.button.AppIconButtonBackgroundedWithText
-import farid.guliyev.mblockly.ui.extensions.containerColor
-import farid.guliyev.mblockly.ui.extensions.contentColor
 import farid.guliyev.mblockly.ui.theme.ErrorRed
 import farid.guliyev.mblockly.ui.theme.InfoBlue
-import farid.guliyev.mblockly.ui.theme.NeutralGray200
 import farid.guliyev.mblockly.ui.theme.NeutralGray600
 import farid.guliyev.mblockly.ui.theme.NeutralGray700
-import farid.guliyev.mblockly.ui.theme.NeutralGray800
 import farid.guliyev.mblockly.ui.theme.SuccessGreen
-import kotlinx.coroutines.delay
-import kotlin.time.Duration.Companion.seconds
 
 sealed interface Confirmation <T> {
 

@@ -1,9 +1,5 @@
 package farid.guliyev.mblockly.ui.screens.home_screen
 
-import android.R.attr.data
-import android.R.attr.src
-import android.net.Uri
-import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -51,7 +47,6 @@ import farid.guliyev.mblockly.ui.theme.ErrorRed
 import farid.guliyev.mblockly.ui.theme.NeutralGray700
 import farid.guliyev.mblockly.ui.theme.PrimaryBlue
 import farid.guliyev.mblockly.ui.theme.SurfaceSecondary
-import java.io.File
 
 
 @Composable
@@ -60,7 +55,6 @@ fun HomeScreen(
     state: HomeState
 ) {
     val context = LocalContext.current
-    val activity = LocalActivity.current
 
     val importFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         val uri = it.data?.data

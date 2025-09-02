@@ -174,13 +174,10 @@ fun InstructionBlockDrawer(
                 instruction = block.instruction,
                 index = index,
                 isMinimized = block.isMinimized,
+                isActive = block.isActive,
                 onEditInstruction = { onUpdateInstruction(index, block.copy(instruction = it)) },
-                onToggleMinimize = {
-                    onUpdateInstruction(
-                        index,
-                        block.copy(isMinimized = !block.isMinimized)
-                    )
-                },
+                onToggleMinimize = { onUpdateInstruction(index, block.copy(isMinimized = !block.isMinimized)) },
+                onToggleActive = { onUpdateInstruction(index, block.copy(isActive = !block.isActive)) },
                 onRemoveInstruction = { onRemoveInstruction(index, block) },
                 onMoveUp = { onMoveUp(index, block) },
                 onMoveDown = { onMoveDown(index, block) },
