@@ -1,5 +1,11 @@
 package farid.guliyev.mblockly.ui.screens.home_screen
 
+import android.R.attr.data
+import android.R.attr.src
+import android.net.Uri
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -19,10 +25,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,9 +47,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import farid.guliyev.mblockly.R
 import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
+import farid.guliyev.mblockly.ui.theme.ErrorRed
 import farid.guliyev.mblockly.ui.theme.NeutralGray700
 import farid.guliyev.mblockly.ui.theme.PrimaryBlue
 import farid.guliyev.mblockly.ui.theme.SurfaceSecondary
+import java.io.File
+
 
 @Composable
 fun HomeScreen(
@@ -49,6 +60,12 @@ fun HomeScreen(
     state: HomeState
 ) {
     val context = LocalContext.current
+    val activity = LocalActivity.current
+
+    val importFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        val uri = it.data?.data
+        viewModel.importFile(context, uri)
+    }
 
     LaunchedEffect(Unit) { viewModel.loadProjects(context) }
 
@@ -88,7 +105,6 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                // Create New Project Option
                 HomeOptionCard(
                     icon = Icons.Default.Add,
                     title = "Create New Project",
@@ -96,14 +112,13 @@ fun HomeScreen(
                     onClick = viewModel::goToBuilderScreen,
                     isPrimary = true
                 )
-                
-//                // Load Project Option
+
                 HomeOptionCard(
                     icon = ImageVector.vectorResource(R.drawable.ic_save),
                     title = "Import Project",
                     description = "Open an existing project file",
                     onClick = {
-                        viewModel.importProject(context = context)
+                        importFileLauncher.launch(viewModel.getImportFileIntent())
                     },
                     isPrimary = false
                 )
@@ -131,6 +146,9 @@ fun HomeScreen(
                             file = file,
                             onClick = {
                                 viewModel.loadProjectFromFile(context, file.name)
+                            },
+                            onDelete = {
+                                viewModel.deleteProjectFile(context, file.name)
                             }
                         )
                     }
@@ -218,7 +236,8 @@ private fun HomeOptionCard(
 @Composable
 private fun ProjectFileItem(
     file: SavedFile,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -261,13 +280,15 @@ private fun ProjectFileItem(
                     color = NeutralGray700
                 )
             }
-            
-            Icon(
-                imageVector = Icons.Default.PlayArrow,
-                contentDescription = "Open project",
-                modifier = Modifier.size(20.dp),
-                tint = NeutralGray700
-            )
+
+            IconButton(onClick = onDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Open project",
+                    modifier = Modifier.size(20.dp),
+                    tint = ErrorRed
+                )
+            }
         }
     }
 } 

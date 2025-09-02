@@ -2,9 +2,9 @@ package farid.guliyev.mblockly.ui.screens.builder_screen
 
 import android.content.Context
 import android.content.Intent
-import androidx.core.content.FileProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.toRoute
+import farid.guliyev.mblockly.MyFileProvider
 import farid.guliyev.mblockly.core.base.BaseViewModel
 import farid.guliyev.mblockly.core.exception_handling.AppException
 import farid.guliyev.mblockly.core.exception_handling.failGracefully
@@ -19,11 +19,9 @@ import farid.guliyev.mblockly.domain.model.instruction.init
 import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import farid.guliyev.mblockly.ui.navigation.BuilderRoute
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -218,7 +216,7 @@ class BuilderViewModel (
             val file = File(context.filesDir, "$fileName.mb")
             val isFileCreated = file.createNewFile()
             if (!isFileCreated) {
-                showConfirmation(description = "This file already exists, do you want to override it?")
+                showSimpleConfirmation(description = "This file already exists, do you want to override it?")
             }
 
             // Write project into file
@@ -232,7 +230,7 @@ class BuilderViewModel (
         runSafelyInBg {
             val file = File(context.filesDir, "shared_project.mb")
             saveCurrentStateToFile(file)
-            val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+            val uri = MyFileProvider.getUriForFile(context, file)
 
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                 type = "text/plain"

@@ -35,11 +35,19 @@ abstract class BaseViewModel : ViewModel() {
         )
     }
 
-    suspend fun showConfirmation(description: String) {
-        CommsModule.confirmationChannel.send(Confirmation(description = description))
-        val isConfirmed = CommsModule.confirmationFeedbackChannel.receive()
+    suspend fun showSimpleConfirmation(description: String) {
+        CommsModule.confirmationChannel.send(Confirmation.SimpleConfirmation(description = description))
+        val isConfirmed = CommsModule.confirmationFeedbackChannel.receive() == true
 
         if (!isConfirmed) failGracefully("Action is cancelled!", ExceptionType.INFO)
+    }
+
+    suspend fun showInputConfirmation(description: String) : String {
+        CommsModule.confirmationChannel.send(Confirmation.InputConfirmation(description = description))
+        val input = CommsModule.confirmationFeedbackChannel.receive() as? String
+
+        if (input == null) failGracefully("Action is cancelled!", ExceptionType.INFO)
+        return input
     }
 
     fun showErrorAlert(e: Exception) {

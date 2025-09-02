@@ -29,6 +29,7 @@ import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderRoute
 import farid.guliyev.mblockly.ui.screens.home_screen.HomeRoute
 import farid.guliyev.mblockly.ui.theme.MBlocklyTheme
 import kotlinx.coroutines.delay
+import java.io.File
 
 class MainActivity : ComponentActivity() {
 
@@ -39,6 +40,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         setContent {
             MBlocklyTheme {
                 val focusManager = LocalFocusManager.current
@@ -81,7 +83,7 @@ class MainActivity : ComponentActivity() {
                 )
 
                 // Show global confirmations
-                var visibleConfirmation by remember { mutableStateOf<Confirmation?>(null) }
+                var visibleConfirmation by remember { mutableStateOf<Confirmation<*>?>(null) }
                 LaunchedEffect(Unit) {
                     for (confirmation in confirmationChannel) {
                         visibleConfirmation = confirmation
@@ -92,11 +94,11 @@ class MainActivity : ComponentActivity() {
                     confirmation = visibleConfirmation,
                     onDismiss = {
                         visibleConfirmation = null
-                        confirmationFeedbackChannel.trySend(false)
+                        confirmationFeedbackChannel.trySend(null)
                     },
                     onConfirm = {
                         visibleConfirmation = null
-                        confirmationFeedbackChannel.trySend(true)
+                        confirmationFeedbackChannel.trySend(it)
                     }
                 )
             }

@@ -193,6 +193,24 @@ sealed interface InstructionRuntime {
             )
         }
     }
+
+    // ------------------- MEDIA -------------------
+    sealed interface Media : InstructionRuntime {
+        class PlaySound(
+            override val base: Instruction.Media.PlaySound = Instruction.Media.PlaySound()
+        ) : Media {
+            val fileName = InstructionField<String, PlaySound>(
+                base.fileName,
+                validator = StringValidator,
+                onEdit = { v -> PlaySound(base.updateField(fileName = v)) }
+            )
+            val repeatCount = InstructionField<Float, PlaySound>(
+                base.repeatCount,
+                validator = StringValidator,
+                onEdit = { v -> PlaySound(base.updateField(repeatCount = v)) }
+            )
+        }
+    }
 }
 
 
@@ -448,7 +466,7 @@ sealed interface Instruction {
             val x: InstructionFieldData = InstructionFieldData("X", "0.0"),
             val y: InstructionFieldData = InstructionFieldData("Y", "0.0"),
             val color: InstructionFieldData = InstructionFieldData("Color", "FF000000"),
-            val fontSize: InstructionFieldData = InstructionFieldData("Font Size", "16.0"),
+            val fontSize: InstructionFieldData = InstructionFieldData("Font Size", "50.0"),
         ) : Visuals {
 
             fun updateField(
@@ -467,6 +485,28 @@ sealed interface Instruction {
 
             override fun buildRuntime(): InstructionRuntime {
                 return InstructionRuntime.Visuals.DrawText(this)
+            }
+        }
+    }
+
+    @Serializable
+    sealed interface Media : Instruction {
+        @Serializable
+        data class PlaySound(
+            val fileName: InstructionFieldData = InstructionFieldData("File Name", "sound.mp3"),
+            val repeatCount: InstructionFieldData = InstructionFieldData("Repeat Count", "1.0")
+        ) : Media {
+
+            fun updateField(
+                fileName: String = this.fileName.value,
+                repeatCount: String = this.repeatCount.value
+            ): PlaySound = PlaySound(
+                fileName = this.fileName.copy(value = fileName),
+                repeatCount = this.repeatCount.copy(value = repeatCount)
+            )
+
+            override fun buildRuntime(): InstructionRuntime {
+                return InstructionRuntime.Media.PlaySound(this)
             }
         }
     }
@@ -502,6 +542,11 @@ val Instruction.type
                 is Wait -> SingleInstructionType.WAIT
             }
         }
+        is Instruction.Media -> {
+            when (this) {
+                is Instruction.Media.PlaySound -> SingleInstructionType.PLAY_SOUND
+            }
+        }
     }
 
 val Instruction.optionalFields: List<String>
@@ -530,7 +575,8 @@ enum class SingleInstructionType(val description: String, val label: String = ""
     DRAW_SHAPE(description = "📐 Draw a shape", label = "Draw shape"),
     DRAW_LINE("📏 Draw a line", "Draw line"),
     DRAW_TEXT(description = "🔤 Draw text", label = "Draw text"),
-    WAIT(description = "😴 Wait", label = "Wait")
+    WAIT(description = "😴 Wait", label = "Wait"),
+    PLAY_SOUND(description = "🔊 Play a sound", label = "Play sound"),
 }
 
 fun SingleInstructionType.init(): InstructionRuntime {
@@ -544,5 +590,6 @@ fun SingleInstructionType.init(): InstructionRuntime {
         SingleInstructionType.DRAW_TEXT -> InstructionRuntime.Visuals.DrawText()
         SingleInstructionType.ANIMATE_FLOAT -> InstructionRuntime.Animations.AnimateFloat()
         SingleInstructionType.WAIT -> InstructionRuntime.Controls.Wait()
+        SingleInstructionType.PLAY_SOUND -> InstructionRuntime.Media.PlaySound()
     }
 }

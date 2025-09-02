@@ -8,8 +8,8 @@ import kotlinx.coroutines.channels.Channel
 object CommsModule {
 
     val alertChannel = Channel<Alert>()
-    val confirmationChannel = Channel<Confirmation>()
-    val confirmationFeedbackChannel = Channel<Boolean>()
+    val confirmationChannel = Channel<Confirmation<*>>()
+    val confirmationFeedbackChannel = Channel<Any?>()
 }
 
 suspend fun Channel<Alert>.sendException(e: Exception) {

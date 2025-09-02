@@ -1,18 +1,12 @@
 package farid.guliyev.mblockly.ui.screens.builder_screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
@@ -29,19 +23,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import farid.guliyev.mblockly.domain.model.instruction.InstructionRuntime
 import farid.guliyev.mblockly.ui.components.button.AddInstructionButton
-import farid.guliyev.mblockly.ui.components.InstructionContainer
-import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.AnimateFloatInstructionBlock
-import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DefineFloatInstructionBlock
-import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawShapeInstructionBlock
-import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.WaitInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.BuilderTopBar
 import farid.guliyev.mblockly.ui.screens.builder_screen.containers.InstructionGroupDrawer
 import farid.guliyev.mblockly.ui.screens.builder_screen.containers.SingleInstructionDrawer
 import farid.guliyev.mblockly.ui.screens.output_screen.OutputScreen
-import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
 import farid.guliyev.mblockly.ui.theme.AccentEmerald
+import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -51,7 +39,6 @@ fun BuilderScreen(
     state: BuilderState,
     subState: BuilderSubState
 ) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var isRunning by remember { mutableStateOf(false) }
     var splitScreenWeight by remember { mutableFloatStateOf(0.5F) }

@@ -1,5 +1,6 @@
 package farid.guliyev.mblockly.ui.screens.output_screen
 
+import android.content.Context
 import android.util.Log
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animate
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import farid.guliyev.mblockly.core.exception_handling.AppException
@@ -45,6 +47,7 @@ import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupMetaData
 import farid.guliyev.mblockly.ui.screens.output_screen.components.OutputTopBar
 import farid.guliyev.mblockly.ui.screens.output_screen.getOrCreate
+import farid.guliyev.mblockly.ui.screens.output_screen.media.playSound
 import farid.guliyev.mblockly.ui.screens.output_screen.string_interpolator.interpolate
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
@@ -75,9 +78,11 @@ fun ColumnScope.OutputScreen(
         MAIN_GROUP_NAME to mutableStateMapOf()
     ) }
 
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         try {
             handleInstructionGroup(
+                context = context,
                 group = mainInstructionGroup,
                 shapes = scopedShapes,
                 allScopedFloatVariableStates = scopedFloatVariableStates,
@@ -183,6 +188,7 @@ fun ColumnScope.OutputScreen(
 }
 
 suspend fun handleInstructionGroup(
+    context: Context,
     group: InstructionBlock.InstructionGroup,
     shapes: SnapshotStateMap<String, SnapshotStateMap<String, UiShape>>,
     lines: SnapshotStateMap<String, SnapshotStateMap<String, UiLine>>,
@@ -198,6 +204,7 @@ suspend fun handleInstructionGroup(
                     is InstructionBlock.SingleInstruction -> {
                         val parent = getParent(block) as InstructionBlock.InstructionGroup
                         handleSingleInstruction(
+                            context = context,
                             instruction = block.instruction.base,
                             shapes = shapes,
                             lines = lines,
@@ -233,6 +240,7 @@ suspend fun handleInstructionGroup(
                             InstructionGroupMetaData.Thread -> {
                                 launch {
                                     handleInstructionGroup(
+                                        context = context,
                                         group = block,
                                         shapes = shapes,
                                         lines = lines,
@@ -257,6 +265,7 @@ suspend fun handleInstructionGroup(
                             is InstructionGroupMetaData.FiniteLoop -> {
                                 repeat(metadata.loopCount.toInt()) {
                                     handleInstructionGroup(
+                                        context = context,
                                         group = block,
                                         shapes = shapes,
                                         allScopedFloatVariableStates = allScopedFloatVariableStates,
@@ -277,6 +286,7 @@ suspend fun handleInstructionGroup(
                             InstructionGroupMetaData.InfiniteLoop -> {
                                 while (true) {
                                     handleInstructionGroup(
+                                        context = context,
                                         group = block,
                                         shapes = shapes,
                                         allScopedFloatVariableStates = allScopedFloatVariableStates,
@@ -306,6 +316,7 @@ suspend fun handleInstructionGroup(
                                             cleanUpScope()
                                         } else {
                                             handleInstructionGroup(
+                                                context = context,
                                                 group = block,
                                                 shapes = shapes,
                                                 allScopedFloatVariableStates = allScopedFloatVariableStates,
@@ -339,6 +350,7 @@ suspend fun handleInstructionGroup(
 
 suspend fun handleSingleInstruction(
     instruction: Instruction,
+    context: Context,
     shapes: SnapshotStateMap<String, SnapshotStateMap<String, UiShape>>,
     lines: SnapshotStateMap<String, SnapshotStateMap<String, UiLine>>,
     texts: SnapshotStateMap<String, SnapshotStateMap<String, UiText>>,
@@ -440,6 +452,11 @@ suspend fun handleSingleInstruction(
                 delay(instruction.durationField.value.toLong())
             }
 
+            is Instruction.Media.PlaySound -> {
+                val fileName = instruction.fileName.value
+                val repeatCount = instruction.repeatCount.value.toFloat().toInt()
+                repeat(repeatCount) { playSound(context, fileName) }
+            }
         }
 
     } catch (e: CancellationException) {

@@ -14,6 +14,7 @@ import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DefineFloatInstru
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawLineInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawShapeInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.DrawTextInstructionBlock
+import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.PlaySoundInstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.blocks.WaitInstructionBlock
 
 @Composable
@@ -45,52 +46,80 @@ fun SingleInstructionDrawer(
     ) {
         // Your block content
         when (instruction) {
-            is InstructionRuntime.Visuals.DrawShape -> {
-                DrawShapeInstructionBlock(
-                    instruction = instruction,
-                    onEditInstruction = onEditInstruction,
-                    onAddInstructionField = onAddInstructionField
-                )
+            is InstructionRuntime.Visuals -> {
+                when (instruction) {
+                    is InstructionRuntime.Visuals.DrawShape -> {
+                        DrawShapeInstructionBlock(
+                            instruction = instruction,
+                            onEditInstruction = onEditInstruction,
+                            onAddInstructionField = onAddInstructionField
+                        )
+                    }
+                    is InstructionRuntime.Visuals.DrawLine -> {
+                        DrawLineInstructionBlock(
+                            instruction = instruction,
+                            onEditInstruction = onEditInstruction,
+                            onAddInstructionField = onAddInstructionField
+                        )
+                    }
+                    is InstructionRuntime.Visuals.DrawText -> {
+                        DrawTextInstructionBlock(
+                            instruction = instruction,
+                            onEditInstruction = onEditInstruction,
+                            onAddInstructionField = onAddInstructionField
+                        )
+                    }
+                }
             }
-            is InstructionRuntime.Visuals.DrawLine -> {
-                DrawLineInstructionBlock(
-                    instruction = instruction,
-                    onEditInstruction = onEditInstruction,
-                    onAddInstructionField = onAddInstructionField
-                )
+            is InstructionRuntime.Variables -> {
+                when (instruction) {
+                    is InstructionRuntime.Variables.DefineFloat -> {
+                        DefineFloatInstructionBlock(
+                            instruction = instruction,
+                            onEditInstruction = onEditInstruction
+                        )
+                    }
+                    is InstructionRuntime.Variables.ChangeFloat -> {
+                        ChangeFloatInstructionBlock(
+                            instruction = instruction,
+                            onEditInstruction = onEditInstruction,
+                            onAddInstructionField = onAddInstructionField
+                        )
+                    }
+                }
             }
-            is InstructionRuntime.Visuals.DrawText -> {
-                DrawTextInstructionBlock(
-                    instruction = instruction,
-                    onEditInstruction = onEditInstruction,
-                    onAddInstructionField = onAddInstructionField
-                )
-            }
-            is InstructionRuntime.Variables.DefineFloat -> {
-                DefineFloatInstructionBlock(
-                    instruction = instruction,
-                    onEditInstruction = onEditInstruction
-                )
-            }
-            is InstructionRuntime.Variables.ChangeFloat -> {
-                ChangeFloatInstructionBlock(
-                    instruction = instruction,
-                    onEditInstruction = onEditInstruction,
-                    onAddInstructionField = onAddInstructionField
-                )
-            }
-            is InstructionRuntime.Animations.AnimateFloat -> {
-                AnimateFloatInstructionBlock(
-                    instruction = instruction,
-                    onEditInstruction = onEditInstruction
-                )
+            is InstructionRuntime.Animations -> {
+                when (instruction) {
+                    is InstructionRuntime.Animations.AnimateFloat -> {
+                        AnimateFloatInstructionBlock(
+                            instruction = instruction,
+                            onEditInstruction = onEditInstruction
+                        )
+                    }
+                }
             }
 
-            is InstructionRuntime.Controls.Wait -> {
-                WaitInstructionBlock(
-                    instruction = instruction,
-                    onEditInstruction = onEditInstruction
-                )
+            is InstructionRuntime.Controls -> {
+                when (instruction) {
+                    is InstructionRuntime.Controls.Wait -> {
+                        WaitInstructionBlock(
+                            instruction = instruction,
+                            onEditInstruction = onEditInstruction
+                        )
+                    }
+                }
+            }
+
+            is InstructionRuntime.Media -> {
+                when (instruction) {
+                    is InstructionRuntime.Media.PlaySound -> {
+                        PlaySoundInstructionBlock(
+                            instruction = instruction,
+                            onEditInstruction = onEditInstruction,
+                            onAddInstructionField = onAddInstructionField
+                        )
+                    }
+                }
             }
         }
     }

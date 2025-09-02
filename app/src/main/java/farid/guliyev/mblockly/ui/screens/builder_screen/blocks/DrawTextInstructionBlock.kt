@@ -52,13 +52,3 @@ fun DrawTextInstructionBlock(
         )
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-private fun DrawLineBlockPreview() {
-    DrawLineInstructionBlock(
-        instruction = InstructionRuntime.Visuals.DrawLine(Instruction.Visuals.DrawLine()),
-        onEditInstruction = {},
-        onAddInstructionField = {}
-    )
-}
