@@ -45,6 +45,7 @@ import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupMetaData
 import farid.guliyev.mblockly.ui.screens.output_screen.components.OutputTopBar
 import farid.guliyev.mblockly.ui.screens.output_screen.getOrCreate
+import farid.guliyev.mblockly.ui.screens.output_screen.string_interpolator.interpolate
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -165,7 +166,7 @@ fun ColumnScope.OutputScreen(
                 texts.values.forEach { text ->
                     Canvas(modifier = Modifier) {
                         drawContext.canvas.nativeCanvas.drawText(
-                            text.text,
+                            text.text.value,
                             text.x.value,
                             text.y.value + text.fontSize.value,
                             android.graphics.Paint().apply {
@@ -380,7 +381,7 @@ suspend fun handleSingleInstruction(
             is Instruction.Visuals.DrawText -> {
                 val textStates = texts.getOrCreate(parent.id)
                 textStates[UUID.randomUUID().toString().take(10)] = UiText(
-                    text = instruction.text.value,
+                    text = instruction.text.value.interpolate(floatVariableStates),
                     x = instruction.x.value.extractFloatValue(floatVariableStates, onError),
                     y = instruction.y.value.extractFloatValue(floatVariableStates, onError),
                     color = instruction.color.value.toLong(16),
