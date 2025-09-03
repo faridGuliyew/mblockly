@@ -54,6 +54,7 @@ import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupMetaData
 import farid.guliyev.mblockly.ui.screens.output_screen.components.OutputTopBar
 import farid.guliyev.mblockly.ui.screens.output_screen.media.playSound
 import farid.guliyev.mblockly.ui.screens.output_screen.string_interpolator.interpolate
+import farid.guliyev.mblockly.utils.ProjectPathUtils
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -450,7 +451,7 @@ suspend fun handleSingleInstruction(
             is Instruction.Visuals.DrawImage -> {
                 val imageStates = images.getOrCreate(parent.id)
                 val imagePath = if (projectName != null) {
-                    File(context.filesDir,"images/$projectName/${instruction.imageName.value}").absolutePath
+                    ProjectPathUtils.getProjectImageFile(context.filesDir, projectName, instruction.imageName.value).absolutePath
                 } else {
                     instruction.imageName.value
                 }

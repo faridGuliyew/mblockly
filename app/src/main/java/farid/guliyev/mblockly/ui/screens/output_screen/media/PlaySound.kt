@@ -4,13 +4,14 @@ import android.content.Context
 import android.media.MediaPlayer
 import androidx.compose.ui.platform.LocalContext
 import farid.guliyev.mblockly.MyFileProvider
+import farid.guliyev.mblockly.utils.ProjectPathUtils
 import kotlinx.coroutines.delay
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
 
 suspend fun playSound(context: Context, fileName: String, projectName: String? = null) {
     // Try to find the audio file in the project-specific audio directory
-    val audioFile = File(context.filesDir, "audios/$projectName/$fileName")
+    val audioFile = ProjectPathUtils.getProjectAudioFile(context.filesDir, projectName!!, fileName)
     
     // Check if the file exists
     if (!audioFile.exists()) {

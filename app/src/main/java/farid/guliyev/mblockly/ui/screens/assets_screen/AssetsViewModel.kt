@@ -12,6 +12,7 @@ import farid.guliyev.mblockly.core.file.withoutExtension
 import farid.guliyev.mblockly.di.NavigationController
 import farid.guliyev.mblockly.di.NavigationModule
 import farid.guliyev.mblockly.ui.navigation.AssetsRoute
+import farid.guliyev.mblockly.utils.ProjectPathUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,7 +39,7 @@ class AssetsViewModel constructor(
             val audioFiles = mutableListOf<AssetItem>()
             
             // Load images
-            val imagesDir = File(context.filesDir, "images/$projectName")
+            val imagesDir = ProjectPathUtils.getProjectImagesDir(context.filesDir, projectName)
             if (imagesDir.exists()) {
                 imagesDir.listFiles()?.forEach { file ->
                     if (file.isFile) {
@@ -56,7 +57,7 @@ class AssetsViewModel constructor(
             }
             
             // Load audio files
-            val audioDir = File(context.filesDir, "audios/$projectName")
+            val audioDir = ProjectPathUtils.getProjectAudiosDir(context.filesDir, projectName)
             if (audioDir.exists()) {
                 audioDir.listFiles()?.forEach { file ->
                     if (file.isFile) {
@@ -106,7 +107,7 @@ class AssetsViewModel constructor(
             val finalFileName = if (fileExtension.isNotEmpty()) "$customName.$fileExtension" else customName
             
             // Create project directory if it doesn't exist
-            val projectDir = File(context.filesDir, "images/$projectName")
+            val projectDir = ProjectPathUtils.getProjectImagesDir(context.filesDir, projectName)
             if (!projectDir.exists()) {
                 projectDir.mkdirs()
             }
@@ -162,7 +163,7 @@ class AssetsViewModel constructor(
             val finalFileName = if (fileExtension.isNotEmpty()) "$customName.$fileExtension" else customName
             
             // Create project directory if it doesn't exist
-            val projectDir = File(context.filesDir, "audios/$projectName")
+            val projectDir = ProjectPathUtils.getProjectAudiosDir(context.filesDir, projectName)
             if (!projectDir.exists()) {
                 projectDir.mkdirs()
             }
@@ -199,7 +200,7 @@ class AssetsViewModel constructor(
             val imageToDelete = state.value.images.find { it.id == imageId }
             if (imageToDelete != null) {
                 // Delete file from filesystem
-                val imageFile = File(context.filesDir, "images/$projectName/${imageToDelete.name}")
+                val imageFile = ProjectPathUtils.getProjectImageFile(context.filesDir, projectName, imageToDelete.name)
                 if (imageFile.exists()) {
                     imageFile.delete()
                 }
@@ -218,7 +219,7 @@ class AssetsViewModel constructor(
             val audioToDelete = state.value.audioFiles.find { it.id == audioId }
             if (audioToDelete != null) {
                 // Delete file from filesystem
-                val audioFile = File(context.filesDir, "audios/$projectName/${audioToDelete.name}")
+                val audioFile = ProjectPathUtils.getProjectAudioFile(context.filesDir, projectName, audioToDelete.name)
                 if (audioFile.exists()) {
                     audioFile.delete()
                 }
