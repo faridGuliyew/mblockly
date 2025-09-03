@@ -8,18 +8,27 @@ import kotlinx.coroutines.delay
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
 
-suspend fun playSound(context: Context, fileName: String) {
-    val asset = MyFileProvider.getUriForFile(context, File(context.filesDir, fileName))
-
-    val mediaPlayer = MediaPlayer()
-    mediaPlayer.setDataSource(context, asset)
-    mediaPlayer.prepare()
-    mediaPlayer.start()
-
-    // Blocking wait until finished
-    while (mediaPlayer.isPlaying) {
-        delay(100.milliseconds)
+suspend fun playSound(context: Context, fileName: String, projectName: String? = null) {
+    // Try to find the audio file in the project-specific audio directory
+    val audioFile = File(context.filesDir, "audios/$projectName/$fileName")
+    
+    // Check if the file exists
+    if (!audioFile.exists()) {
+        throw IllegalArgumentException("Audio file '$fileName' not found in project assets")
     }
 
-    mediaPlayer.release()
+    val asset = MyFileProvider.getUriForFile(context, audioFile)
+
+    val mediaPlayer = MediaPlayer()
+    try {
+        mediaPlayer.setDataSource(context, asset)
+        mediaPlayer.prepare()
+        mediaPlayer.start()
+        // Blocking wait until finished
+        while (mediaPlayer.isPlaying) {
+            delay(100.milliseconds)
+        }
+    } finally {
+        mediaPlayer.release()
+    }
 }

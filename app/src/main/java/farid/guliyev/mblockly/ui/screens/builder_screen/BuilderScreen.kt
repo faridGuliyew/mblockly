@@ -145,7 +145,8 @@ fun BuilderScreen(
                     onError = {
                         viewModel.showErrorAlert(it)
                         isRunning = false
-                    }
+                    },
+                    projectName = subState.projectName
                 )
             }
         }

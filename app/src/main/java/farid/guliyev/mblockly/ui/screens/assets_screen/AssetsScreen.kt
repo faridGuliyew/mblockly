@@ -34,6 +34,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import farid.guliyev.mblockly.R
 import farid.guliyev.mblockly.ui.components.button.AppIconButtonBackgrounded
+import farid.guliyev.mblockly.ui.components.CustomTextField
 import coil.compose.AsyncImage
 import farid.guliyev.mblockly.ui.theme.AccentEmerald
 import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
@@ -116,7 +118,7 @@ fun AssetsScreen(
                     type = AssetType.IMAGE,
                     filePath = image.filePath,
                     onDelete = { viewModel.deleteImage(context, image.id) },
-                    onEdit = { viewModel.showRenameDialog(image.id, image.name) }
+                    onEdit = { viewModel.renameAsset(image.name, image.id) }
                 )
             }
 
@@ -136,7 +138,7 @@ fun AssetsScreen(
                     type = AssetType.AUDIO,
                     filePath = audio.filePath,
                     onDelete = { viewModel.deleteAudio(context, audio.id) },
-                    onEdit = { viewModel.showRenameDialog(audio.id, audio.name) }
+                    onEdit = { viewModel.renameAsset(audio.name, audio.id) }
                 )
             }
 

@@ -32,10 +32,6 @@ class AssetsViewModel constructor(
     val projectName = savedStateHandle.toRoute<AssetsRoute>().projectName
     private val navigationController: NavigationController = NavigationModule.navController
     
-    // Sheet state for rename dialog
-    private val _renameSheetState = MutableStateFlow<RenameSheetState?>(null)
-    val renameSheetState = _renameSheetState.asStateFlow()
-    
     fun loadProjectAssets(context: Context) {
         runSafelyInBg {
             val images = mutableListOf<AssetItem>()
@@ -236,25 +232,18 @@ class AssetsViewModel constructor(
         }
     }
 
-    fun showRenameDialog(assetId: String, currentName: String) {
-        _renameSheetState.value = RenameSheetState(assetId, currentName)
-    }
-    
-    fun hideRenameDialog() {
-        _renameSheetState.value = null
-    }
-    
-    fun renameAsset(newName: String) {
-        val sheetState = _renameSheetState.value ?: return
-        
+    // TODO - needs optimization ASAP!
+    fun renameAsset(currentName: String, assetId: String) {
+
         runSafelyInBg {
-            val fileExtension = sheetState.currentName.substringAfterLast('.', "")
+            val newName = showInputConfirmation(description = "Enter new name", initialValue = currentName.withoutExtension())
+            val fileExtension = currentName.substringAfterLast('.', "")
             val finalName = if (fileExtension.isNotEmpty()) "$newName.$fileExtension" else newName
             
             // Update the asset name in state
             state.update { currentState ->
                 val updatedImages = currentState.images.map { image ->
-                    if (image.id == sheetState.assetId) {
+                    if (image.id == assetId) {
                         image.copy(name = finalName)
                     } else {
                         image
@@ -262,7 +251,7 @@ class AssetsViewModel constructor(
                 }
                 
                 val updatedAudioFiles = currentState.audioFiles.map { audio ->
-                    if (audio.id == sheetState.assetId) {
+                    if (audio.id == assetId) {
                         audio.copy(name = finalName)
                     } else {
                         audio
@@ -276,8 +265,8 @@ class AssetsViewModel constructor(
             }
             
             // Rename the actual file
-            val asset = state.value.images.find { it.id == sheetState.assetId } 
-                ?: state.value.audioFiles.find { it.id == sheetState.assetId }
+            val asset = state.value.images.find { it.id == assetId }
+                ?: state.value.audioFiles.find { it.id == assetId }
             
             if (asset != null && asset.filePath != null) {
                 val oldFile = File(asset.filePath)
@@ -289,8 +278,6 @@ class AssetsViewModel constructor(
                     showErrorAlert(Exception("Failed to rename file"))
                 }
             }
-            
-            hideRenameDialog()
         }
     }
     

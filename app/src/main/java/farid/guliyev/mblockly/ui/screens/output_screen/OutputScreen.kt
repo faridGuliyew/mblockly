@@ -62,7 +62,8 @@ fun ColumnScope.OutputScreen(
     currentDrag: Float = 0.5F,
     getParent: (InstructionBlock) -> InstructionBlock.InstructionGroup,
     onError: (Exception) -> Unit,
-    onDrag: (amount: Float) -> Unit
+    onDrag: (amount: Float) -> Unit,
+    projectName: String? = null
 ) {
     val scopedShapes = remember { mutableStateMapOf<String, SnapshotStateMap<String, UiShape>>(
         MAIN_GROUP_NAME to mutableStateMapOf()
@@ -89,7 +90,8 @@ fun ColumnScope.OutputScreen(
                 lines = scopedLines,
                 texts = scopedTexts,
                 getParent = getParent,
-                onError = onError
+                onError = onError,
+                projectName = projectName
             )
         } catch (e: CancellationException) {
             throw e
@@ -195,7 +197,8 @@ suspend fun handleInstructionGroup(
     texts: SnapshotStateMap<String, SnapshotStateMap<String, UiText>>,
     allScopedFloatVariableStates: SnapshotStateMap<String, SnapshotStateMap<String, MutableFloatState>>,
     getParent: (InstructionBlock) -> InstructionBlock.InstructionGroup,
-    onError: (Exception) -> Unit
+    onError: (Exception) -> Unit,
+    projectName: String? = null
 ) {
     coroutineScope {
         try {
@@ -213,7 +216,8 @@ suspend fun handleInstructionGroup(
                             allScopedFloatVariableStates = allScopedFloatVariableStates,
                             parent = parent,
                             texts = texts,
-                            onError = onError
+                            onError = onError,
+                            projectName = projectName
                         )
                         return@forEach
                     }
@@ -249,7 +253,8 @@ suspend fun handleInstructionGroup(
                                         texts = texts,
                                         allScopedFloatVariableStates = allScopedFloatVariableStates,
                                         onError = onError,
-                                        getParent = getParent
+                                        getParent = getParent,
+                                        projectName = projectName
                                     )
 
                                     println("--------------------------------------")
@@ -274,7 +279,8 @@ suspend fun handleInstructionGroup(
                                         lines = lines,
                                         texts = texts,
                                         getParent = getParent,
-                                        onError = onError
+                                        onError = onError,
+                                        projectName = projectName
                                     )
 
                                     println("--------------------------------------")
@@ -295,7 +301,8 @@ suspend fun handleInstructionGroup(
                                         lines = lines,
                                         texts = texts,
                                         getParent = getParent,
-                                        onError = onError
+                                        onError = onError,
+                                        projectName = projectName
                                     )
 
                                     println("--------------------------------------")
@@ -325,7 +332,8 @@ suspend fun handleInstructionGroup(
                                                 lines = lines,
                                                 texts = texts,
                                                 getParent = getParent,
-                                                onError = onError
+                                                onError = onError,
+                                                projectName = projectName
                                             )
                                         }
                                     }
@@ -358,7 +366,8 @@ suspend fun handleSingleInstruction(
     texts: SnapshotStateMap<String, SnapshotStateMap<String, UiText>>,
     allScopedFloatVariableStates: SnapshotStateMap<String, SnapshotStateMap<String, MutableFloatState>>,
     parent: InstructionBlock.InstructionGroup,
-    onError: (Exception) -> Unit
+    onError: (Exception) -> Unit,
+    projectName: String? = null
 ) {
     try {
         val floatVariableStates = allScopedFloatVariableStates.getOrCreate(parent.id)
@@ -456,7 +465,7 @@ suspend fun handleSingleInstruction(
             is Instruction.Media.PlaySound -> {
                 val fileName = instruction.fileName.value
                 val repeatCount = instruction.repeatCount.value.toFloat().toInt()
-                repeat(repeatCount) { playSound(context, fileName) }
+                repeat(repeatCount) { playSound(context, fileName, projectName) }
             }
         }
 

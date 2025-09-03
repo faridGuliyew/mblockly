@@ -42,7 +42,7 @@ class BuilderViewModel (
         const val ROOT = "ROOT"
         const val MAIN_GROUP_NAME = "MAIN"
 
-        const val RECENT_PROJECT_FILE_NAME = "most_recent_project.mb"
+        const val RECENT_PROJECT_FILE_NAME = "save_file.mb"
 
         val initialGroup get() = InstructionBlock.InstructionGroup(id = MAIN_GROUP_NAME, parentId = ROOT, metaData = InstructionGroupMetaData.Thread)
     }
@@ -263,7 +263,7 @@ class BuilderViewModel (
 
     fun goBack() {
         runSafelyInBg {
-            val file = File(context!!.filesDir, RECENT_PROJECT_FILE_NAME)
+            val file = File(context!!.filesDir, subState.value.projectName + ".mb")
             saveCurrentStateToFile(file)
             navigationController.sendCommand { popBackStack() }
         }
