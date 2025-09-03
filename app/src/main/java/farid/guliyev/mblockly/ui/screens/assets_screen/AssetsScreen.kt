@@ -1,6 +1,9 @@
 package farid.guliyev.mblockly.ui.screens.assets_screen
 
 import android.annotation.SuppressLint
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +34,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -56,10 +60,25 @@ fun AssetsScreen(
     viewModel: AssetsViewModel,
     state: AssetsState
 ) {
+    val context = LocalContext.current
+    
+    val imagePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        val uri = it.data?.data
+        viewModel.uploadImage(context, uri)
+    }
+    
+    val audioPickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        val uri = it.data?.data
+        viewModel.uploadAudio(context, uri)
+    }
+    
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            AssetsTopBar(onBack = viewModel::goBack)
+            AssetsTopBar(
+                projectName = viewModel.projectName,
+                onBack = viewModel::goBack
+            )
         }
     ) { innerPadding ->
         LazyColumn(
@@ -72,8 +91,8 @@ fun AssetsScreen(
             // Upload Section
             item {
                 UploadSection(
-                    onUploadImage = viewModel::uploadImage,
-                    onUploadAudio = viewModel::uploadAudio
+                    onUploadImage = { imagePickerLauncher.launch(viewModel.getImagePickerIntent()) },
+                    onUploadAudio = { audioPickerLauncher.launch(viewModel.getAudioPickerIntent()) }
                 )
             }
 
@@ -91,7 +110,7 @@ fun AssetsScreen(
                     name = image.name,
                     size = image.size,
                     type = AssetType.IMAGE,
-                    onDelete = { viewModel.deleteImage(image.id) }
+                    onDelete = { viewModel.deleteImage(context, image.id) }
                 )
             }
 
@@ -109,7 +128,7 @@ fun AssetsScreen(
                     name = audio.name,
                     size = audio.size,
                     type = AssetType.AUDIO,
-                    onDelete = { viewModel.deleteAudio(audio.id) }
+                    onDelete = { viewModel.deleteAudio(context, audio.id) }
                 )
             }
 
@@ -124,7 +143,7 @@ fun AssetsScreen(
 }
 
 @Composable
-fun AssetsTopBar(onBack: () -> Unit) {
+fun AssetsTopBar(projectName: String, onBack: () -> Unit) {
     Column(
         modifier = Modifier
             .statusBarsPadding()
@@ -143,7 +162,7 @@ fun AssetsTopBar(onBack: () -> Unit) {
             Spacer(modifier = Modifier.width(16.dp))
 
             Text(
-                text = "Assets",
+                text = "Assets - $projectName",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = NeutralGray700
@@ -360,17 +379,17 @@ fun EmptyState() {
 fun AssetsScreenPreview() {
     val mockState = AssetsState(
         images = listOf(
-            AssetItem("img_1", "background.jpg", "2.3 MB", "Image"),
-            AssetItem("img_2", "logo.png", "156 KB", "Image")
+            AssetItem("img_1", "background.jpg", "2.3 MB", AssetType.IMAGE),
+            AssetItem("img_2", "logo.png", "156 KB", AssetType.IMAGE)
         ),
         audioFiles = listOf(
-            AssetItem("audio_1", "background_music.mp3", "4.7 MB", "Audio"),
-            AssetItem("audio_2", "sound_effect.wav", "892 KB", "Audio")
+            AssetItem("audio_1", "background_music.mp3", "4.7 MB", AssetType.AUDIO),
+            AssetItem("audio_2", "sound_effect.wav", "892 KB", AssetType.AUDIO)
         )
     )
     
-    AssetsScreen(
-        viewModel = AssetsViewModel(),
-        state = mockState
-    )
+//    AssetsScreen(
+//        viewModel = AssetsViewModel(),
+//        state = mockState
+//    )
 }

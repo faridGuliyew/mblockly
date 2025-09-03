@@ -26,6 +26,7 @@ class BuilderState (
 data class BuilderSubState(
     val topBarMode: TopBarMode = TopBarMode.HIDDEN,
     val sheetType: SheetType = SheetType.HIDDEN,
+    val projectName: String,
     val addSingleInstructionParentId: String? = null,
     val addInstructionGroupParentId: String? = null,
     val enableOptionalFieldInstructionAndIndex : Pair<InstructionBlock.SingleInstruction, Int>? = null,

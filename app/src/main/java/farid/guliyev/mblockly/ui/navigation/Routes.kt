@@ -9,9 +9,9 @@ import kotlinx.serialization.json.Json
 data object HomeRoute
 
 @Serializable
-data class BuilderRoute(val instructionGroupEncoded: String = "") {
+data class BuilderRoute(val instructionGroupEncoded: String = "", val projectName: String) {
     val instructionGroup get() = runCatching { Json.decodeFromString<InstructionBlock.InstructionGroup>(instructionGroupEncoded) }.getOrNull()
 }
 
 @Serializable
-data object AssetsRoute
+data class AssetsRoute(val projectName: String)

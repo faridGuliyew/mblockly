@@ -9,6 +9,7 @@ import farid.guliyev.mblockly.MyFileProvider
 import farid.guliyev.mblockly.core.base.BaseViewModel
 import farid.guliyev.mblockly.core.exception_handling.AppException
 import farid.guliyev.mblockly.core.exception_handling.failGracefully
+import farid.guliyev.mblockly.core.file.withoutExtension
 import farid.guliyev.mblockly.di.NavigationController
 import farid.guliyev.mblockly.di.NavigationModule
 import farid.guliyev.mblockly.domain.BLOCK_CANNOT_BE_MOVED_FURTHER
@@ -46,11 +47,12 @@ class BuilderViewModel (
         val initialGroup get() = InstructionBlock.InstructionGroup(id = MAIN_GROUP_NAME, parentId = ROOT, metaData = InstructionGroupMetaData.Thread)
     }
 
-    private val groupFromArgs = savedStateHandle.toRoute<BuilderRoute>().instructionGroup
+    private val args  = savedStateHandle.toRoute<BuilderRoute>()
+    private val groupFromArgs = args.instructionGroup
     val state = MutableStateFlow(BuilderState(mainInstructionGroup = groupFromArgs ?: initialGroup))
     private val instructionGroupsById = mutableMapOf(MAIN_GROUP_NAME to state.value.mainInstructionGroup)
 
-    val subState = MutableStateFlow(BuilderSubState())
+    val subState = MutableStateFlow(BuilderSubState(projectName = args.projectName.withoutExtension()))
 
     init {
         loadInstructionGroupsFromFileIfNeeded()
@@ -213,7 +215,7 @@ class BuilderViewModel (
     fun showShareSheet() { showSheet(SheetType.SHARE) }
 
     fun onOpenAssets() {
-        navigationController.sendCommand { navigate(AssetsRoute) }
+        navigationController.sendCommand { navigate(AssetsRoute(subState.value.projectName)) }
     }
 
     /** Below functions primarily interact with subState. MAY OR MAY NOT interact with main state */
@@ -229,11 +231,11 @@ class BuilderViewModel (
             if (!isFileCreated) {
                 showSimpleConfirmation(description = "This file already exists, do you want to override it?")
             }
-
             // Write project into file
             saveCurrentStateToFile(file)
 
             showSuccessAlert(message = "File named: $fileName saved successfully!")
+            subState.update { it.copy(projectName = fileName) }
         }
     }
 

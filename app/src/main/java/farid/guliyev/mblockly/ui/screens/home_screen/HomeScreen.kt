@@ -42,7 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import farid.guliyev.mblockly.R
-import farid.guliyev.mblockly.core.content_resolver.getNameFromUri
 import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
 import farid.guliyev.mblockly.ui.theme.ErrorRed
 import farid.guliyev.mblockly.ui.theme.NeutralGray700
@@ -104,7 +103,7 @@ fun HomeScreen(
                     icon = Icons.Default.Add,
                     title = "Create New Project",
                     description = "Start building a new program from scratch",
-                    onClick = viewModel::goToBuilderScreen,
+                    onClick = { viewModel.createNewProject(context) },
                     isPrimary = true
                 )
 

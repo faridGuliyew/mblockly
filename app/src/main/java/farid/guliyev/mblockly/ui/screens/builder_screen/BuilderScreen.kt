@@ -48,6 +48,7 @@ fun BuilderScreen(
         topBar = {
             BuilderTopBar(
                 mode = subState.topBarMode,
+                projectName = subState.projectName,
                 onHide = viewModel::hideTopBarMenu,
                 onAddSingleInstruction = viewModel::addSingleInstruction,
                 onAddInstructionGroup = viewModel::addInstructionGroup,

@@ -13,6 +13,6 @@ data class AssetItem(
     val id: String,
     val name: String,
     val size: String,
-    val type: String
+    val type: AssetType
 )
 

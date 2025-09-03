@@ -42,6 +42,7 @@ import farid.guliyev.mblockly.ui.screens.builder_screen.init
 import farid.guliyev.mblockly.ui.theme.InfoBlue
 import farid.guliyev.mblockly.ui.theme.NeutralGray100
 import farid.guliyev.mblockly.ui.theme.NeutralGray200
+import farid.guliyev.mblockly.ui.theme.NeutralGray500
 import farid.guliyev.mblockly.ui.theme.NeutralGray700
 import farid.guliyev.mblockly.ui.theme.SuccessGreen
 import farid.guliyev.mblockly.ui.theme.WarningAmber
@@ -57,6 +58,7 @@ enum class TopBarMode {
 @Composable
 fun BuilderTopBar(
     mode: TopBarMode = TopBarMode.ADD_INSTRUCTION,
+    projectName: String,
     supportedInstructions: List<SingleInstructionType> = SingleInstructionType.entries,
     onAddSingleInstruction: (SingleInstructionType) -> Unit,
     onAddInstructionGroup: (InstructionGroupMetaData) -> Unit,
@@ -83,13 +85,20 @@ fun BuilderTopBar(
             )
             Spacer(modifier = Modifier.width(10.dp))
 
-            Text(
-                modifier = Modifier.weight(1F),
-                text = "Builder panel",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = NeutralGray700
-            )
+            Column (modifier = Modifier.weight(1F)) {
+                Text(
+                    text = "Builder panel",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = NeutralGray700
+                )
+                Text(
+                    text = projectName,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = NeutralGray500
+                )
+            }
 
             Row (horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (mode != TopBarMode.HIDDEN) {
@@ -242,5 +251,5 @@ private fun TopBarPrev() {
         mode = TopBarMode.ADD_INSTRUCTION,
         supportedInstructions = listOf(),
         enableFieldList = listOf(),
-        onEnableField = {}, onBack = {}, onShare = {}, onAddInstructionGroup = {}, onOpenAssets = {})
+        onEnableField = {}, onBack = {}, onShare = {}, onAddInstructionGroup = {}, onOpenAssets = {}, projectName = "")
 }
