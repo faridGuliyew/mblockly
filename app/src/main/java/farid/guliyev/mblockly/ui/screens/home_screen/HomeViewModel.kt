@@ -7,6 +7,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.core.app.ActivityCompat.startActivityForResult
 import farid.guliyev.mblockly.core.base.BaseViewModel
+import farid.guliyev.mblockly.core.content_resolver.getNameFromUri
 import farid.guliyev.mblockly.core.exception_handling.failGracefully
 import farid.guliyev.mblockly.di.NavigationController
 import farid.guliyev.mblockly.di.NavigationModule
@@ -35,12 +36,17 @@ class HomeViewModel(
     fun importFile(context: Context, uri: Uri?) {
         runSafelyInBg {
             if (uri == null) failGracefully("No file selected")
+            val fileName = context.contentResolver.getNameFromUri(uri = uri).orEmpty()
+
+            val fileExtensionRegex = """\..*$""".toRegex()
+            val fileExtension = fileExtensionRegex.find(fileName)?.value
+
+            if (fileExtension != ".mb") failGracefully("File extension should be .mb! Please specify a valid project file.")
+
             context.contentResolver.openInputStream(uri)!!.buffered().use { input ->
-                val fileName = showInputConfirmation("How do you want to save this file?") + ".mb"
+                val fileName = showInputConfirmation("How do you want to save this file?", initialValue = fileName.replace(fileExtensionRegex, "")) + ".mb"
                 val destinationFile = File(context.filesDir, fileName).also { it.createNewFile() }
-                destinationFile.outputStream().buffered().use { out->
-                    out.write(input.readBytes())
-                }
+                destinationFile.outputStream().buffered().use { out-> out.write(input.readBytes()) }
             }
             showSuccessAlert("Done!")
             loadProjects(context)

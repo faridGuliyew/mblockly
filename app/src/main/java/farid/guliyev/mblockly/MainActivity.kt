@@ -25,8 +25,10 @@ import farid.guliyev.mblockly.ui.components.dialog.Confirmation
 import farid.guliyev.mblockly.ui.components.dialog.TopConfirmation
 import farid.guliyev.mblockly.ui.navigation.BuilderRoute
 import farid.guliyev.mblockly.ui.navigation.HomeRoute
+import farid.guliyev.mblockly.ui.navigation.AssetsRoute
 import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderRoute
 import farid.guliyev.mblockly.ui.screens.home_screen.HomeRoute
+import farid.guliyev.mblockly.ui.screens.assets_screen.AssetsRoute
 import farid.guliyev.mblockly.ui.theme.MBlocklyTheme
 import kotlinx.coroutines.delay
 import java.io.File
@@ -59,6 +61,9 @@ class MainActivity : ComponentActivity() {
                     }
                     composable<BuilderRoute> {
                         BuilderRoute()
+                    }
+                    composable<AssetsRoute> {
+                        AssetsRoute()
                     }
                 }
 

@@ -42,8 +42,8 @@ abstract class BaseViewModel : ViewModel() {
         if (!isConfirmed) failGracefully("Action is cancelled!", ExceptionType.INFO)
     }
 
-    suspend fun showInputConfirmation(description: String) : String {
-        CommsModule.confirmationChannel.send(Confirmation.InputConfirmation(description = description))
+    suspend fun showInputConfirmation(description: String, initialValue: String) : String {
+        CommsModule.confirmationChannel.send(Confirmation.InputConfirmation(description = description, initialValue = initialValue))
         val input = CommsModule.confirmationFeedbackChannel.receive() as? String
 
         if (input == null) failGracefully("Action is cancelled!", ExceptionType.INFO)

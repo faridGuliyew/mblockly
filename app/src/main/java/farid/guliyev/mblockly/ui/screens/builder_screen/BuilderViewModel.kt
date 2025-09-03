@@ -19,6 +19,7 @@ import farid.guliyev.mblockly.domain.model.instruction.SingleInstructionType
 import farid.guliyev.mblockly.domain.model.instruction.init
 import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import farid.guliyev.mblockly.ui.navigation.BuilderRoute
+import farid.guliyev.mblockly.ui.navigation.AssetsRoute
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -210,6 +211,10 @@ class BuilderViewModel (
     }
 
     fun showShareSheet() { showSheet(SheetType.SHARE) }
+
+    fun onOpenAssets() {
+        navigationController.sendCommand { navigate(AssetsRoute) }
+    }
 
     /** Below functions primarily interact with subState. MAY OR MAY NOT interact with main state */
 

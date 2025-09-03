@@ -12,3 +12,6 @@ data object HomeRoute
 data class BuilderRoute(val instructionGroupEncoded: String = "") {
     val instructionGroup get() = runCatching { Json.decodeFromString<InstructionBlock.InstructionGroup>(instructionGroupEncoded) }.getOrNull()
 }
+
+@Serializable
+data object AssetsRoute

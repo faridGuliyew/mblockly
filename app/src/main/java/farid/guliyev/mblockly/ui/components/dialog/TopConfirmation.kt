@@ -52,7 +52,8 @@ sealed interface Confirmation <T> {
 
     data class InputConfirmation(
         override val title: String = "Confirmation",
-        override val description: String
+        override val description: String,
+        val initialValue: String
     ) : Confirmation<String>
 }
 
@@ -113,7 +114,7 @@ fun <T> TopConfirmation(
 
                 is Confirmation.InputConfirmation -> {
 
-                    var fileName by rememberSaveable { mutableStateOf("imported_file") }
+                    var fileName by rememberSaveable { mutableStateOf(confirmation.initialValue) }
                     Row (
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -174,7 +175,7 @@ fun ColumnScope.ConfirmationActionButtons(
 private fun TopAlertPrev() {
     Column {
         TopConfirmation(
-            confirmation = Confirmation.InputConfirmation("Title", "description"),
+            confirmation = Confirmation.InputConfirmation("Title", "description", ""),
             onDismiss = {},
             onConfirm = {}
         )

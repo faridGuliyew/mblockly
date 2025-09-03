@@ -55,6 +55,7 @@ fun BuilderScreen(
                 onEnableField = viewModel::enableInstructionOptionalField,
                 onShare = viewModel::showShareSheet,
                 onBack = viewModel::goBack,
+                onOpenAssets = viewModel::onOpenAssets,
                 onExecute = {
                     scope.launch {
                         isRunning = false

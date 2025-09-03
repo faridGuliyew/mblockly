@@ -19,6 +19,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.HorizontalDivider
@@ -43,6 +44,7 @@ import farid.guliyev.mblockly.ui.theme.NeutralGray100
 import farid.guliyev.mblockly.ui.theme.NeutralGray200
 import farid.guliyev.mblockly.ui.theme.NeutralGray700
 import farid.guliyev.mblockly.ui.theme.SuccessGreen
+import farid.guliyev.mblockly.ui.theme.WarningAmber
 
 enum class TopBarMode {
     ADD_INSTRUCTION,
@@ -63,6 +65,7 @@ fun BuilderTopBar(
     onExecute: () -> Unit,
     onHide: () -> Unit,
     onShare: () -> Unit,
+    onOpenAssets: () -> Unit,
     onBack: () -> Unit
 ) {
     Column(
@@ -96,6 +99,12 @@ fun BuilderTopBar(
                         onClick = onHide
                     )
                 }
+
+                AppIconButtonBackgrounded(
+                    icon = Icons.Default.Menu,
+                    color = WarningAmber,
+                    onClick = onOpenAssets
+                )
 
                 AppIconButtonBackgrounded(
                     icon = Icons.Default.Share,
@@ -233,5 +242,5 @@ private fun TopBarPrev() {
         mode = TopBarMode.ADD_INSTRUCTION,
         supportedInstructions = listOf(),
         enableFieldList = listOf(),
-        onEnableField = {}, onBack = {}, onShare = {}, onAddInstructionGroup = {})
+        onEnableField = {}, onBack = {}, onShare = {}, onAddInstructionGroup = {}, onOpenAssets = {})
 }
