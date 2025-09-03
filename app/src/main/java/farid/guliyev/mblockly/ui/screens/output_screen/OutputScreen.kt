@@ -1,7 +1,7 @@
 package farid.guliyev.mblockly.ui.screens.output_screen
 
+import android.R.attr.name
 import android.content.Context
-import android.util.Log
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.tween
@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,21 +26,25 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.withTransform
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import farid.guliyev.mblockly.core.exception_handling.AppException
 import farid.guliyev.mblockly.domain.UNDEFINED_VARIABLE
 import farid.guliyev.mblockly.domain.model.instruction.Instruction
+import farid.guliyev.mblockly.ui.model.UiImage
 import farid.guliyev.mblockly.ui.model.UiLine
 import farid.guliyev.mblockly.ui.model.UiShape
 import farid.guliyev.mblockly.ui.model.UiText
@@ -46,13 +52,13 @@ import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderViewModel.Compani
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionBlock
 import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupMetaData
 import farid.guliyev.mblockly.ui.screens.output_screen.components.OutputTopBar
-import farid.guliyev.mblockly.ui.screens.output_screen.getOrCreate
 import farid.guliyev.mblockly.ui.screens.output_screen.media.playSound
 import farid.guliyev.mblockly.ui.screens.output_screen.string_interpolator.interpolate
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.UUID
 
 @Composable
@@ -75,6 +81,10 @@ fun ColumnScope.OutputScreen(
         MAIN_GROUP_NAME to mutableStateMapOf()
     ) }
 
+    val scopedImages = remember { mutableStateMapOf<String, SnapshotStateMap<String, UiImage>>(
+        MAIN_GROUP_NAME to mutableStateMapOf()
+    ) }
+
     val scopedFloatVariableStates = remember { mutableStateMapOf<String, SnapshotStateMap<String, MutableFloatState>>(
         MAIN_GROUP_NAME to mutableStateMapOf()
     ) }
@@ -89,6 +99,7 @@ fun ColumnScope.OutputScreen(
                 allScopedFloatVariableStates = scopedFloatVariableStates,
                 lines = scopedLines,
                 texts = scopedTexts,
+                images = scopedImages,
                 getParent = getParent,
                 onError = onError,
                 projectName = projectName
@@ -185,6 +196,22 @@ fun ColumnScope.OutputScreen(
                     }
                 }
             }
+
+            // DRAW IMAGES
+            scopedImages.values.forEach { images ->
+                images.values.forEach { image ->
+                    AsyncImage(
+                        modifier = Modifier
+                            .graphicsLayer {
+                                translationX = image.x.value
+                                translationY = image.y.value
+                            }
+                            .size(image.width.value.dp, image.height.value.dp),
+                        model = image.absolutePath,
+                        contentDescription = null
+                    )
+                }
+            }
         }
     }
 }
@@ -195,6 +222,7 @@ suspend fun handleInstructionGroup(
     shapes: SnapshotStateMap<String, SnapshotStateMap<String, UiShape>>,
     lines: SnapshotStateMap<String, SnapshotStateMap<String, UiLine>>,
     texts: SnapshotStateMap<String, SnapshotStateMap<String, UiText>>,
+    images: SnapshotStateMap<String, SnapshotStateMap<String, UiImage>>,
     allScopedFloatVariableStates: SnapshotStateMap<String, SnapshotStateMap<String, MutableFloatState>>,
     getParent: (InstructionBlock) -> InstructionBlock.InstructionGroup,
     onError: (Exception) -> Unit,
@@ -216,6 +244,7 @@ suspend fun handleInstructionGroup(
                             allScopedFloatVariableStates = allScopedFloatVariableStates,
                             parent = parent,
                             texts = texts,
+                            images = images,
                             onError = onError,
                             projectName = projectName
                         )
@@ -232,6 +261,7 @@ suspend fun handleInstructionGroup(
                         shapes[block.id] = SnapshotStateMap<String, UiShape>().apply { putAll(shapes[parent.id]!!) }
                         lines[block.id] = SnapshotStateMap<String, UiLine>().apply { putAll(lines[parent.id]!!) }
                         texts[block.id] = SnapshotStateMap<String, UiText>().apply { putAll(texts[parent.id]!!) }
+                        images[block.id] = SnapshotStateMap<String, UiImage>().apply { putAll(images[parent.id]!!) }
 
                         val floatVariableStates = allScopedFloatVariableStates[block.id]!!
 
@@ -240,6 +270,7 @@ suspend fun handleInstructionGroup(
                             shapes.remove(block.id)
                             lines.remove(block.id)
                             texts.remove(block.id)
+                            images.remove(block.id)
                         }
 
                         when (val metadata = block.metaData) {
@@ -251,6 +282,7 @@ suspend fun handleInstructionGroup(
                                         shapes = shapes,
                                         lines = lines,
                                         texts = texts,
+                                        images = images,
                                         allScopedFloatVariableStates = allScopedFloatVariableStates,
                                         onError = onError,
                                         getParent = getParent,
@@ -278,6 +310,7 @@ suspend fun handleInstructionGroup(
                                         allScopedFloatVariableStates = allScopedFloatVariableStates,
                                         lines = lines,
                                         texts = texts,
+                                        images = images,
                                         getParent = getParent,
                                         onError = onError,
                                         projectName = projectName
@@ -300,6 +333,7 @@ suspend fun handleInstructionGroup(
                                         allScopedFloatVariableStates = allScopedFloatVariableStates,
                                         lines = lines,
                                         texts = texts,
+                                        images = images,
                                         getParent = getParent,
                                         onError = onError,
                                         projectName = projectName
@@ -331,6 +365,7 @@ suspend fun handleInstructionGroup(
                                                 allScopedFloatVariableStates = allScopedFloatVariableStates,
                                                 lines = lines,
                                                 texts = texts,
+                                                images = images,
                                                 getParent = getParent,
                                                 onError = onError,
                                                 projectName = projectName
@@ -364,6 +399,7 @@ suspend fun handleSingleInstruction(
     shapes: SnapshotStateMap<String, SnapshotStateMap<String, UiShape>>,
     lines: SnapshotStateMap<String, SnapshotStateMap<String, UiLine>>,
     texts: SnapshotStateMap<String, SnapshotStateMap<String, UiText>>,
+    images: SnapshotStateMap<String, SnapshotStateMap<String, UiImage>>,
     allScopedFloatVariableStates: SnapshotStateMap<String, SnapshotStateMap<String, MutableFloatState>>,
     parent: InstructionBlock.InstructionGroup,
     onError: (Exception) -> Unit,
@@ -408,6 +444,23 @@ suspend fun handleSingleInstruction(
                     y = instruction.y.value.extractFloatValue(floatVariableStates, onError),
                     color = instruction.color.value.toLong(16),
                     fontSize = instruction.fontSize.value.extractFloatValue(floatVariableStates, onError)
+                )
+            }
+
+            is Instruction.Visuals.DrawImage -> {
+                val imageStates = images.getOrCreate(parent.id)
+                val imagePath = if (projectName != null) {
+                    File(context.filesDir,"images/$projectName/${instruction.imageName.value}").absolutePath
+                } else {
+                    instruction.imageName.value
+                }
+
+                imageStates[instruction.name.value] = UiImage(
+                    width = instruction.width.value.extractFloatValue(floatVariableStates, onError),
+                    height = instruction.height.value.extractFloatValue(floatVariableStates, onError),
+                    x = instruction.x.value.extractFloatValue(floatVariableStates, onError),
+                    y = instruction.y.value.extractFloatValue(floatVariableStates, onError),
+                    absolutePath = imagePath
                 )
             }
 

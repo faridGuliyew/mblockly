@@ -193,6 +193,39 @@ sealed interface InstructionRuntime {
                 onEdit = { v -> DrawText(base.updateField(fontSize = v)) }
             )
         }
+
+        class DrawImage(override val base: Instruction.Visuals.DrawImage = Instruction.Visuals.DrawImage()) : Visuals {
+            val name = InstructionField<String, DrawImage>(
+                base.name,
+                validator = StringValidator,
+                onEdit = { v -> DrawImage(base.updateField(name = v)) }
+            )
+            val imageName = InstructionField<String, DrawImage>(
+                base.imageName,
+                validator = StringValidator,
+                onEdit = { v -> DrawImage(base.updateField(imageName = v)) }
+            )
+            val x = InstructionField<Float, DrawImage>(
+                base.x,
+                validator = StringValidator,
+                onEdit = { v -> DrawImage(base.updateField(x = v)) }
+            )
+            val y = InstructionField<Float, DrawImage>(
+                base.y,
+                validator = StringValidator,
+                onEdit = { v -> DrawImage(base.updateField(y = v)) }
+            )
+            val width = InstructionField<Float, DrawImage>(
+                base.width,
+                validator = StringValidator,
+                onEdit = { v -> DrawImage(base.updateField(width = v)) }
+            )
+            val height = InstructionField<Float, DrawImage>(
+                base.height,
+                validator = StringValidator,
+                onEdit = { v -> DrawImage(base.updateField(height = v)) }
+            )
+        }
     }
 
     // ------------------- MEDIA -------------------
@@ -482,6 +515,37 @@ sealed interface Instruction {
                 return InstructionRuntime.Visuals.DrawText(this)
             }
         }
+
+        @Serializable
+        data class DrawImage(
+            val name: InstructionFieldData = InstructionFieldData("Name", UUID.randomUUID().toString().take(10)),
+            val imageName: InstructionFieldData = InstructionFieldData("Image Name", "image.jpg"),
+            val x: InstructionFieldData = InstructionFieldData("X", "0.0"),
+            val y: InstructionFieldData = InstructionFieldData("Y", "0.0"),
+            val width: InstructionFieldData = InstructionFieldData("Width", "200.0"),
+            val height: InstructionFieldData = InstructionFieldData("Height", "200.0")
+        ) : Visuals {
+
+            fun updateField(
+                name: String = this.name.value,
+                imageName: String = this.imageName.value,
+                x: String = this.x.value,
+                y: String = this.y.value,
+                width: String = this.width.value,
+                height: String = this.height.value
+            ): DrawImage = DrawImage(
+                name = this.name.copy(value = name),
+                imageName = this.imageName.copy(value = imageName),
+                x = this.x.copy(value = x),
+                y = this.y.copy(value = y),
+                width = this.width.copy(value = width),
+                height = this.height.copy(value = height)
+            )
+
+            override fun buildRuntime(): InstructionRuntime {
+                return InstructionRuntime.Visuals.DrawImage(this)
+            }
+        }
     }
 
     @Serializable
@@ -522,6 +586,7 @@ val Instruction.type
                 is Instruction.Visuals.DrawShape -> SingleInstructionType.DRAW_SHAPE
                 is Instruction.Visuals.DrawLine -> SingleInstructionType.DRAW_LINE
                 is Instruction.Visuals.DrawText -> SingleInstructionType.DRAW_TEXT
+                is Instruction.Visuals.DrawImage -> SingleInstructionType.DRAW_IMAGE
             }
         }
 
@@ -550,6 +615,7 @@ val Instruction.optionalFields: List<String>
                 is Instruction.Visuals.DrawShape -> Instruction.Visuals.DrawShape.OptionalFields.entries.map { it.name }
                 is Instruction.Visuals.DrawLine -> Instruction.Visuals.DrawLine.OptionalFields.entries.map { it.name }
                 is Instruction.Visuals.DrawText -> emptyList()
+                is Instruction.Visuals.DrawImage -> emptyList()
             }
         }
         is Instruction.Variables -> when (this) {
@@ -568,6 +634,7 @@ enum class SingleInstructionType(val description: String, val label: String = ""
     DRAW_SHAPE(description = "📐 Draw a shape", label = "Draw shape"),
     DRAW_LINE("📏 Draw a line", "Draw line"),
     DRAW_TEXT(description = "🔤 Draw text", label = "Draw text"),
+    DRAW_IMAGE(description = "🖼️ Draw an image", label = "Draw image"),
     WAIT(description = "😴 Wait", label = "Wait"),
     PLAY_SOUND(description = "🔊 Play a sound", label = "Play sound"),
 }
@@ -580,6 +647,7 @@ fun SingleInstructionType.init(): InstructionRuntime {
         SingleInstructionType.DRAW_SHAPE -> InstructionRuntime.Visuals.DrawShape()
         SingleInstructionType.DRAW_LINE -> InstructionRuntime.Visuals.DrawLine()
         SingleInstructionType.DRAW_TEXT -> InstructionRuntime.Visuals.DrawText()
+        SingleInstructionType.DRAW_IMAGE -> InstructionRuntime.Visuals.DrawImage()
         SingleInstructionType.ANIMATE_FLOAT -> InstructionRuntime.Animations.AnimateFloat()
         SingleInstructionType.WAIT -> InstructionRuntime.Controls.Wait()
         SingleInstructionType.PLAY_SOUND -> InstructionRuntime.Media.PlaySound()
