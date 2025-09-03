@@ -124,11 +124,6 @@ fun <T> TopConfirmation(
                             value = fileName,
                             onValueChange = { fileName = it }
                         )
-                        Text(
-                            text = ".mb",
-                            fontSize = 14.sp,
-                            color = NeutralGray700
-                        )
                     }
 
                     ConfirmationActionButtons(

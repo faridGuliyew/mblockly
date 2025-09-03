@@ -8,13 +8,21 @@ import androidx.navigation.toRoute
 import farid.guliyev.mblockly.core.base.BaseViewModel
 import farid.guliyev.mblockly.core.content_resolver.getNameFromUri
 import farid.guliyev.mblockly.core.exception_handling.failGracefully
+import farid.guliyev.mblockly.core.file.withoutExtension
 import farid.guliyev.mblockly.di.NavigationController
 import farid.guliyev.mblockly.di.NavigationModule
 import farid.guliyev.mblockly.ui.navigation.AssetsRoute
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.io.File
 import java.util.UUID
+
+data class RenameSheetState(
+    val assetId: String,
+    val currentName: String
+)
 
 class AssetsViewModel constructor(
     savedStateHandle: SavedStateHandle
@@ -23,6 +31,10 @@ class AssetsViewModel constructor(
     val state = MutableStateFlow(AssetsState())
     val projectName = savedStateHandle.toRoute<AssetsRoute>().projectName
     private val navigationController: NavigationController = NavigationModule.navController
+    
+    // Sheet state for rename dialog
+    private val _renameSheetState = MutableStateFlow<RenameSheetState?>(null)
+    val renameSheetState = _renameSheetState.asStateFlow()
     
     fun loadProjectAssets(context: Context) {
         runSafelyInBg {
@@ -39,7 +51,8 @@ class AssetsViewModel constructor(
                                 id = "img_${file.name.hashCode()}",
                                 name = file.name,
                                 size = formatFileSize(file.length()),
-                                type = AssetType.IMAGE
+                                type = AssetType.IMAGE,
+                                filePath = file.absolutePath
                             )
                         )
                     }
@@ -56,7 +69,8 @@ class AssetsViewModel constructor(
                                 id = "audio_${file.name.hashCode()}",
                                 name = file.name,
                                 size = formatFileSize(file.length()),
-                                type = AssetType.AUDIO
+                                type = AssetType.AUDIO,
+                                filePath = file.absolutePath
                             )
                         )
                     }
@@ -83,8 +97,17 @@ class AssetsViewModel constructor(
         runSafelyInBg {
             if (uri == null) failGracefully("No image selected")
             
-            val fileName = context.contentResolver.getNameFromUri(uri = uri).orEmpty()
-            if (fileName.isEmpty()) failGracefully("Could not get file name")
+            val originalFileName = context.contentResolver.getNameFromUri(uri = uri).orEmpty()
+            if (originalFileName.isEmpty()) failGracefully("Could not get file name")
+            
+            // Ask user for custom name
+            val customName = showInputConfirmation(
+                "What would you like to name this image?", 
+                initialValue = originalFileName.withoutExtension()
+            )
+            
+            val fileExtension = originalFileName.substringAfterLast('.', "")
+            val finalFileName = if (fileExtension.isNotEmpty()) "$customName.$fileExtension" else customName
             
             // Create project directory if it doesn't exist
             val projectDir = File(context.filesDir, "images/$projectName")
@@ -93,7 +116,7 @@ class AssetsViewModel constructor(
             }
             
             // Copy file to project directory
-            val destinationFile = File(projectDir, fileName)
+            val destinationFile = File(projectDir, finalFileName)
             context.contentResolver.openInputStream(uri)!!.buffered().use { input ->
                 destinationFile.outputStream().buffered().use { output ->
                     output.write(input.readBytes())
@@ -105,9 +128,10 @@ class AssetsViewModel constructor(
             
             val newImage = AssetItem(
                 id = "img_${UUID.randomUUID().toString().take(8)}",
-                name = fileName,
+                name = finalFileName,
                 size = fileSize,
-                type = AssetType.IMAGE
+                type = AssetType.IMAGE,
+                filePath = destinationFile.absolutePath
             )
             
             state.update { 
@@ -129,8 +153,17 @@ class AssetsViewModel constructor(
         runSafelyInBg {
             if (uri == null) failGracefully("No audio file selected")
             
-            val fileName = context.contentResolver.getNameFromUri(uri = uri).orEmpty()
-            if (fileName.isEmpty()) failGracefully("Could not get file name")
+            val originalFileName = context.contentResolver.getNameFromUri(uri = uri).orEmpty()
+            if (originalFileName.isEmpty()) failGracefully("Could not get file name")
+            
+            // Ask user for custom name
+            val customName = showInputConfirmation(
+                "What would you like to name this audio file?", 
+                initialValue = originalFileName.withoutExtension()
+            )
+            
+            val fileExtension = originalFileName.substringAfterLast('.', "")
+            val finalFileName = if (fileExtension.isNotEmpty()) "$customName.$fileExtension" else customName
             
             // Create project directory if it doesn't exist
             val projectDir = File(context.filesDir, "audios/$projectName")
@@ -139,7 +172,7 @@ class AssetsViewModel constructor(
             }
             
             // Copy file to project directory
-            val destinationFile = File(projectDir, fileName)
+            val destinationFile = File(projectDir, finalFileName)
             context.contentResolver.openInputStream(uri)!!.buffered().use { input ->
                 destinationFile.outputStream().buffered().use { output ->
                     output.write(input.readBytes())
@@ -151,9 +184,10 @@ class AssetsViewModel constructor(
             
             val newAudio = AssetItem(
                 id = "audio_${UUID.randomUUID().toString().take(8)}",
-                name = fileName,
+                name = finalFileName,
                 size = fileSize,
-                type = AssetType.AUDIO
+                type = AssetType.AUDIO,
+                filePath = destinationFile.absolutePath
             )
             
             state.update { 
@@ -202,6 +236,64 @@ class AssetsViewModel constructor(
         }
     }
 
+    fun showRenameDialog(assetId: String, currentName: String) {
+        _renameSheetState.value = RenameSheetState(assetId, currentName)
+    }
+    
+    fun hideRenameDialog() {
+        _renameSheetState.value = null
+    }
+    
+    fun renameAsset(newName: String) {
+        val sheetState = _renameSheetState.value ?: return
+        
+        runSafelyInBg {
+            val fileExtension = sheetState.currentName.substringAfterLast('.', "")
+            val finalName = if (fileExtension.isNotEmpty()) "$newName.$fileExtension" else newName
+            
+            // Update the asset name in state
+            state.update { currentState ->
+                val updatedImages = currentState.images.map { image ->
+                    if (image.id == sheetState.assetId) {
+                        image.copy(name = finalName)
+                    } else {
+                        image
+                    }
+                }
+                
+                val updatedAudioFiles = currentState.audioFiles.map { audio ->
+                    if (audio.id == sheetState.assetId) {
+                        audio.copy(name = finalName)
+                    } else {
+                        audio
+                    }
+                }
+                
+                currentState.copy(
+                    images = updatedImages,
+                    audioFiles = updatedAudioFiles
+                )
+            }
+            
+            // Rename the actual file
+            val asset = state.value.images.find { it.id == sheetState.assetId } 
+                ?: state.value.audioFiles.find { it.id == sheetState.assetId }
+            
+            if (asset != null && asset.filePath != null) {
+                val oldFile = File(asset.filePath)
+                val newFile = File(oldFile.parent, finalName)
+                
+                if (oldFile.exists() && oldFile.renameTo(newFile)) {
+                    showSuccessAlert("File renamed successfully!")
+                } else {
+                    showErrorAlert(Exception("Failed to rename file"))
+                }
+            }
+            
+            hideRenameDialog()
+        }
+    }
+    
     fun goBack() {
         navigationController.sendCommand { popBackStack() }
     }

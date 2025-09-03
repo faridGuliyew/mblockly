@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -36,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
@@ -45,10 +47,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import farid.guliyev.mblockly.R
 import farid.guliyev.mblockly.ui.components.button.AppIconButtonBackgrounded
+import coil.compose.AsyncImage
 import farid.guliyev.mblockly.ui.theme.AccentEmerald
 import farid.guliyev.mblockly.ui.theme.BackgroundPrimary
 import farid.guliyev.mblockly.ui.theme.BackgroundSecondary
 import farid.guliyev.mblockly.ui.theme.ErrorRed
+import farid.guliyev.mblockly.ui.theme.InfoBlue
 import farid.guliyev.mblockly.ui.theme.NeutralGray200
 import farid.guliyev.mblockly.ui.theme.NeutralGray400
 import farid.guliyev.mblockly.ui.theme.NeutralGray500
@@ -110,7 +114,9 @@ fun AssetsScreen(
                     name = image.name,
                     size = image.size,
                     type = AssetType.IMAGE,
-                    onDelete = { viewModel.deleteImage(context, image.id) }
+                    filePath = image.filePath,
+                    onDelete = { viewModel.deleteImage(context, image.id) },
+                    onEdit = { viewModel.showRenameDialog(image.id, image.name) }
                 )
             }
 
@@ -128,7 +134,9 @@ fun AssetsScreen(
                     name = audio.name,
                     size = audio.size,
                     type = AssetType.AUDIO,
-                    onDelete = { viewModel.deleteAudio(context, audio.id) }
+                    filePath = audio.filePath,
+                    onDelete = { viewModel.deleteAudio(context, audio.id) },
+                    onEdit = { viewModel.showRenameDialog(audio.id, audio.name) }
                 )
             }
 
@@ -278,16 +286,14 @@ fun AssetsSection(
     }
 }
 
-enum class AssetType (val icon: Int, val color: Color) {
-    IMAGE(R.drawable.ic_image, PrimaryBlue), AUDIO(R.drawable.ic_audio, AccentEmerald)
-}
-
 @Composable
 fun AssetItemCard(
     name: String,
     size: String,
     type: AssetType,
-    onDelete: () -> Unit
+    filePath: String? = null,
+    onDelete: () -> Unit,
+    onEdit: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -305,12 +311,33 @@ fun AssetItemCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Asset icon
-            AppIconButtonBackgrounded(
-                icon = ImageVector.vectorResource(type.icon),
-                color = type.color,
-                onClick = {}
-            )
+            // Asset preview/icon
+            when (type) {
+                AssetType.IMAGE -> {
+                    if (filePath != null) {
+                        AsyncImage(
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                            model = filePath,
+                            contentDescription = name
+                        )
+                    } else {
+                        AppIconButtonBackgrounded(
+                            icon = ImageVector.vectorResource(type.icon),
+                            color = type.color,
+                            onClick = {}
+                        )
+                    }
+                }
+                AssetType.AUDIO -> {
+                    AppIconButtonBackgrounded(
+                        icon = ImageVector.vectorResource(type.icon),
+                        color = type.color,
+                        onClick = {}
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -326,18 +353,28 @@ fun AssetItemCard(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "$type • $size",
+                    text = "${type.name.lowercase().replaceFirstChar { it.uppercase() }} • $size",
                     fontSize = 14.sp,
                     color = NeutralGray500
                 )
             }
 
-            // Delete button
-            AppIconButtonBackgrounded(
-                icon = Icons.Default.Delete,
-                color = ErrorRed,
-                onClick = onDelete
-            )
+            // Action buttons
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Edit button
+                AppIconButtonBackgrounded(
+                    icon = Icons.Default.Edit,
+                    color = InfoBlue,
+                    onClick = onEdit
+                )
+                
+                // Delete button
+                AppIconButtonBackgrounded(
+                    icon = Icons.Default.Delete,
+                    color = ErrorRed,
+                    onClick = onDelete
+                )
+            }
         }
     }
 }
@@ -379,12 +416,12 @@ fun EmptyState() {
 fun AssetsScreenPreview() {
     val mockState = AssetsState(
         images = listOf(
-            AssetItem("img_1", "background.jpg", "2.3 MB", AssetType.IMAGE),
-            AssetItem("img_2", "logo.png", "156 KB", AssetType.IMAGE)
+            AssetItem("img_1", "background.jpg", "2.3 MB", AssetType.IMAGE, null),
+            AssetItem("img_2", "logo.png", "156 KB", AssetType.IMAGE, null)
         ),
         audioFiles = listOf(
-            AssetItem("audio_1", "background_music.mp3", "4.7 MB", AssetType.AUDIO),
-            AssetItem("audio_2", "sound_effect.wav", "892 KB", AssetType.AUDIO)
+            AssetItem("audio_1", "background_music.mp3", "4.7 MB", AssetType.AUDIO, null),
+            AssetItem("audio_2", "sound_effect.wav", "892 KB", AssetType.AUDIO, null)
         )
     )
     
