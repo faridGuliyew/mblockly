@@ -14,13 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.MoreVert
+
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -38,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import farid.guliyev.mblockly.R
 import farid.guliyev.mblockly.ui.components.button.AppIconButton
+import farid.guliyev.mblockly.ui.components.InstructionActionMenu
 import farid.guliyev.mblockly.ui.theme.BackgroundSecondary
 import farid.guliyev.mblockly.ui.theme.NeutralGray700
 import farid.guliyev.mblockly.ui.theme.PrimaryBlue
@@ -104,35 +99,17 @@ fun InstructionContainer(
                     )
                 )
             }
-            Row (horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                // Move up
-                AppIconButton(
-                    onClick = onMoveUp,
-                    onLongClick = onMoveOut,
-                    icon = Icons.Default.KeyboardArrowUp,
-                    color = PrimaryBlue
-                )
-                // Move down
-                AppIconButton(
-                    onClick = onMoveDown,
-                    onLongClick = onMoveIn,
-                    icon = Icons.Default.KeyboardArrowDown,
-                    color = PrimaryBlue
-                )
-                onDuplicate?.let {
-                    // Minimize button
-                    AppIconButton(onClick = onDuplicate, icon = ImageVector.vectorResource(R.drawable.ic_copy), color = NeutralGray700)
-                }
-                onEditSeparately?.let {
-                    // Edit separately button
-                    AppIconButton(onClick = onEditSeparately, icon = Icons.Default.ExitToApp, color = SuccessGreen)
-                }
-                // Toggle isActive button
-                AppIconButton(onClick = onToggleActive, icon = Icons.Default.Build, color = NeutralGray700)
-
-                // Remove button
-                AppIconButton(onClick = onRemove, icon = Icons.Default.Close, color = ErrorRed)
-            }
+            InstructionActionMenu(
+                onMoveUp = onMoveUp,
+                onMoveDown = onMoveDown,
+                onMoveOut = onMoveOut,
+                onMoveIn = onMoveIn,
+                onDuplicate = onDuplicate,
+                onEditSeparately = onEditSeparately,
+                onToggleActive = onToggleActive,
+                onRemove = onRemove,
+                onToggleMinimize = onToggleMinimize
+            )
         }
 
         if (isMinimized) return@Column
