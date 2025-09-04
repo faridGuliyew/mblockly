@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import farid.guliyev.mblockly.core.base.BaseViewModel
+import farid.guliyev.mblockly.core.compression.unzipFile
 import farid.guliyev.mblockly.core.content_resolver.getNameFromUri
 import farid.guliyev.mblockly.core.exception_handling.failGracefully
 import farid.guliyev.mblockly.core.file.withoutExtension
@@ -11,12 +12,15 @@ import farid.guliyev.mblockly.di.NavigationController
 import farid.guliyev.mblockly.di.NavigationModule
 import farid.guliyev.mblockly.ui.navigation.BuilderRoute
 import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderViewModel
-import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderViewModel.Companion.RECENT_PROJECT_FILE_NAME
+import farid.guliyev.mblockly.ui.screens.builder_screen.BuilderViewModel.Companion.RECENT_PROJECT_NAME
+import farid.guliyev.mblockly.utils.createNewProject
+import farid.guliyev.mblockly.utils.deleteProject
+import farid.guliyev.mblockly.utils.getProjectDir
+import farid.guliyev.mblockly.utils.getProjectMBFile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.io.File
 import java.text.DateFormat
 import java.util.Date
 
@@ -28,27 +32,22 @@ class HomeViewModel(
     val state = MutableStateFlow(HomeState())
 
     fun getImportFileIntent(): Intent {
-        val importFileIntent = Intent(Intent.ACTION_GET_CONTENT).apply {
-            setType("*/*")
-        }
+        val importFileIntent = Intent(Intent.ACTION_GET_CONTENT).apply { setType("application/zip") }
         val importFileChooser = Intent.createChooser(importFileIntent, "Choose a file")
         return importFileChooser
     }
 
-    fun importFile(context: Context, uri: Uri?) {
+    fun importProject(context: Context, uri: Uri?) {
         runSafelyInBg {
             if (uri == null) failGracefully("No file selected")
-            val fileName = context.contentResolver.getNameFromUri(uri = uri).orEmpty()
-
-            val fileExtensionRegex = """\..*$""".toRegex()
-            val fileExtension = fileExtensionRegex.find(fileName)?.value
-
-            if (fileExtension != ".mb") failGracefully("File extension should be .mb! Please specify a valid project file.")
+            val originalProjectName = context.contentResolver.getNameFromUri(uri = uri).orEmpty().withoutExtension()
 
             context.contentResolver.openInputStream(uri)!!.buffered().use { input ->
-                val fileName = showInputConfirmation("How do you want to save this file?", initialValue = fileName.withoutExtension()) + ".mb"
-                val destinationFile = File(context.filesDir, fileName).also { it.createNewFile() }
-                destinationFile.outputStream().buffered().use { out-> out.write(input.readBytes()) }
+                val projectName = showInputConfirmation("How do you want to save this project?", initialValue = originalProjectName)
+                val destinationFile = context.getProjectDir(projectName)
+                if (destinationFile.exists()) failGracefully("Project named $projectName already exists!")
+
+                context.unzipFile(input, originalProjectName, projectName)
             }
             showSuccessAlert("Done!")
             loadProjects(context)
@@ -60,7 +59,7 @@ class HomeViewModel(
             val filesDir = context.filesDir
             val formatter = DateFormat.getInstance()
             val mbFiles =
-                filesDir.listFiles { file -> file.extension.lowercase() == "mb" }.orEmpty()
+                filesDir.listFiles { file -> file.isDirectory }.orEmpty()
                     .sortedByDescending { it.lastModified() }
                     .map {
                         SavedFile(
@@ -73,28 +72,34 @@ class HomeViewModel(
         }
     }
 
-    fun loadProjectFromFile(context: Context, fileName: String) {
+    fun loadProjectFromMBFile(context: Context, projectName: String) {
         runSafelyInBg {
-            val file = File(context.filesDir, fileName)
+            val file = context.getProjectMBFile(projectName)
             val jsonContent = file.inputStream().buffered().readBytes().decodeToString()
-            navController.sendCommand { navigate(BuilderRoute(jsonContent, fileName)) }
+            navController.sendCommand { navigate(BuilderRoute(jsonContent, projectName)) }
         }
     }
 
-    fun deleteProjectFile(context: Context, fileName: String) {
+    fun deleteProject(context: Context, projectName: String) {
         runSafelyInBg {
-            val file = File(context.filesDir, fileName)
-            file.delete()
+            context.deleteProject(projectName)
             loadProjects(context)
         }
     }
 
     fun createNewProject(context: Context?) {
         runSafelyInBg {
-            val file = File(context!!.filesDir, RECENT_PROJECT_FILE_NAME)
+            val file = try {
+                context!!.createNewProject(RECENT_PROJECT_NAME)
+            } catch (_: Exception) {
+                val newProjectName = showInputConfirmation("Enter a new name, since $RECENT_PROJECT_NAME already exists.", "project_name")
+                context!!.createNewProject(newProjectName)
+            }
+
             val json = Json.encodeToString(BuilderViewModel.initialGroup)
             file.outputStream().buffered().use { it.write(json.toByteArray()) }
-            navController.sendCommand { navigate(BuilderRoute(json, RECENT_PROJECT_FILE_NAME)) }
+
+            navController.sendCommand { navigate(BuilderRoute(json, file.name)) }
         }
     }
 }

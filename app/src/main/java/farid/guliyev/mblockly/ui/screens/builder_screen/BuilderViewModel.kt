@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.toRoute
 import farid.guliyev.mblockly.MyFileProvider
 import farid.guliyev.mblockly.core.base.BaseViewModel
+import farid.guliyev.mblockly.core.compression.zipFile
 import farid.guliyev.mblockly.core.exception_handling.AppException
 import farid.guliyev.mblockly.core.exception_handling.failGracefully
 import farid.guliyev.mblockly.core.file.withoutExtension
@@ -22,6 +23,9 @@ import farid.guliyev.mblockly.ui.components.sheet.SheetType
 import farid.guliyev.mblockly.ui.navigation.BuilderRoute
 import farid.guliyev.mblockly.ui.navigation.AssetsRoute
 import farid.guliyev.mblockly.ui.screens.builder_screen.components.TopBarMode
+import farid.guliyev.mblockly.utils.createNewProject
+import farid.guliyev.mblockly.utils.getProjectDir
+import farid.guliyev.mblockly.utils.getProjectMBFile
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
@@ -42,7 +46,8 @@ class BuilderViewModel (
         const val ROOT = "ROOT"
         const val MAIN_GROUP_NAME = "MAIN"
 
-        const val RECENT_PROJECT_FILE_NAME = "save_file.mb"
+        const val RECENT_PROJECT_NAME = "save_file"
+        const val SHARED_PROJECT_NAME = "shared_project"
 
         val initialGroup get() = InstructionBlock.InstructionGroup(id = MAIN_GROUP_NAME, parentId = ROOT, metaData = InstructionGroupMetaData.Thread)
     }
@@ -224,29 +229,30 @@ class BuilderViewModel (
     init {
         saveFilePeriodically()
     }
-    fun saveToFile(context: Context, fileName: String) {
-        runSafelyInBg {
-            val file = File(context.filesDir, "$fileName.mb")
-            val isFileCreated = file.createNewFile()
-            if (!isFileCreated) {
-                showSimpleConfirmation(description = "This file already exists, do you want to override it?")
-            }
-            // Write project into file
-            saveCurrentStateToFile(file)
 
-            showSuccessAlert(message = "File named: $fileName saved successfully!")
-            subState.update { it.copy(projectName = fileName) }
+    fun saveToFile(context: Context, projectName: String) {
+        runSafelyInBg {
+            val file = context.createNewProject(projectName)
+            // Write project into file
+            saveCurrentStateToMBFile(file)
+
+            showSuccessAlert(message = "Project named: $projectName saved successfully!")
+            subState.update { it.copy(projectName = projectName) }
         }
     }
 
-    fun shareFile(context: Context) {
+    fun shareProject(context: Context) {
         runSafelyInBg {
-            val file = File(context.filesDir, "shared_project.mb")
-            saveCurrentStateToFile(file)
-            val uri = MyFileProvider.getUriForFile(context, file)
+            // Save file first
+            val projectMBFile = context.getProjectMBFile(subState.value.projectName)
+            saveCurrentStateToMBFile(projectMBFile)
+            // Zip project
+            val projectDir = context.getProjectDir(subState.value.projectName)
+            val projectZip = context.zipFile(projectDir)
 
+            val uri = MyFileProvider.getUriForFile(context, projectZip)
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                type = "text/plain"
+                type = "application/zip"
                 putExtra(Intent.EXTRA_STREAM, uri)
                 putExtra(Intent.EXTRA_TEXT, "Check out this project!")
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -256,15 +262,15 @@ class BuilderViewModel (
         }
     }
 
-    private fun saveCurrentStateToFile(file: File) {
+    private fun saveCurrentStateToMBFile(file: File) {
         val json = Json.encodeToString(state.value.mainInstructionGroup)
         file.outputStream().buffered().use { it.write(json.toByteArray()) }
     }
 
     fun goBack() {
         runSafelyInBg {
-            val file = File(context!!.filesDir, subState.value.projectName + ".mb")
-            saveCurrentStateToFile(file)
+            val file = context!!.getProjectMBFile(projectName = subState.value.projectName)
+            saveCurrentStateToMBFile(file)
             navigationController.sendCommand { popBackStack() }
         }
     }
@@ -273,7 +279,8 @@ class BuilderViewModel (
         runSafelyInBg {
             while (true) {
                 delay(1.minutes)
-                saveCurrentStateToFile(File(context!!.filesDir, RECENT_PROJECT_FILE_NAME))
+                val file = context!!.getProjectMBFile(subState.value.projectName)
+                saveCurrentStateToMBFile(file)
             }
         }
     }

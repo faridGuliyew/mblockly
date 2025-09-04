@@ -1,6 +1,5 @@
 package farid.guliyev.mblockly.ui.screens.output_screen
 
-import android.R.attr.name
 import android.content.Context
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animate
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,7 +24,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.snapshots.SnapshotStateMap
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -54,12 +51,11 @@ import farid.guliyev.mblockly.ui.screens.builder_screen.InstructionGroupMetaData
 import farid.guliyev.mblockly.ui.screens.output_screen.components.OutputTopBar
 import farid.guliyev.mblockly.ui.screens.output_screen.media.playSound
 import farid.guliyev.mblockly.ui.screens.output_screen.string_interpolator.interpolate
-import farid.guliyev.mblockly.utils.ProjectPathUtils
+import farid.guliyev.mblockly.utils.getProjectImageFile
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
 import java.util.UUID
 
 @Composable
@@ -451,7 +447,7 @@ suspend fun handleSingleInstruction(
             is Instruction.Visuals.DrawImage -> {
                 val imageStates = images.getOrCreate(parent.id)
                 val imagePath = if (projectName != null) {
-                    ProjectPathUtils.getProjectImageFile(context.filesDir, projectName, instruction.imageName.value).absolutePath
+                    context.getProjectImageFile(projectName, instruction.imageName.value).absolutePath
                 } else {
                     instruction.imageName.value
                 }

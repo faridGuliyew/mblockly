@@ -42,7 +42,7 @@ fun BuilderRoute() {
                         viewModel.saveToFile(context, it)
                     },
                     onShare = {
-                        viewModel.shareFile(context)
+                        viewModel.shareProject(context)
                     }
                 )
             }

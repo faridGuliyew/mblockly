@@ -58,7 +58,7 @@ fun HomeScreen(
 
     val importFileLauncher = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         val uri = it.data?.data
-        viewModel.importFile(context, uri)
+        viewModel.importProject(context, uri)
     }
 
     LaunchedEffect(Unit) { viewModel.loadProjects(context) }
@@ -139,10 +139,10 @@ fun HomeScreen(
                         ProjectFileItem(
                             file = file,
                             onClick = {
-                                viewModel.loadProjectFromFile(context, file.name)
+                                viewModel.loadProjectFromMBFile(context, file.name)
                             },
                             onDelete = {
-                                viewModel.deleteProjectFile(context, file.name)
+                                viewModel.deleteProject(context, file.name)
                             }
                         )
                     }

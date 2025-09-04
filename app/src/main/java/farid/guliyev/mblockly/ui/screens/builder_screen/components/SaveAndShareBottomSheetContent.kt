@@ -40,7 +40,7 @@ enum class ShareSheetOption (
 @Composable
 fun SaveAndShareBottomSheetContent(
     onDismiss: () -> Unit,
-    onSave: (fileName: String) -> Unit,
+    onSave: (projectName: String) -> Unit,
     onShare: () -> Unit
 ) {
     Column(
@@ -79,7 +79,7 @@ fun SaveAndShareBottomSheetContent(
                     var fileName by remember { mutableStateOf("my_great_program") }
                     Column (verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            text = "Specify file name",
+                            text = "Specify project name",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Medium,
                             color = NeutralGray700
@@ -95,11 +95,6 @@ fun SaveAndShareBottomSheetContent(
                                 CustomTextField(
                                     value = fileName,
                                     onValueChange = { fileName = it }
-                                )
-                                Text(
-                                    text = ".mb",
-                                    fontSize = 14.sp,
-                                    color = NeutralGray700
                                 )
                             }
 
